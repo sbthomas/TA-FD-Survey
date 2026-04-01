@@ -1,0 +1,26 @@
+   
+   
+  First  Station : CLF                           
+  ---------------- 
+  X =   -1924358.1841 m  LAT =  39 17 48.90457 North 
+  Y =   -4553657.5605 m  LON = 112 54 31.43708 West  
+  Z =    4018748.1788 m  EHT =      1370.0460  Meters
+   
+  Second Station : M21                           
+  ---------------- 
+  X =   -1926329.3942 m  LAT =  39 28 22.78387 North 
+  Y =   -4539533.0124 m  LON = 112 59 37.35886 West  
+  Z =    4033999.8059 m  EHT =      1589.0700  Meters
+   
+  Forward azimuth        FAZ = 339 29 42.5093 From North
+  Back azimuth           BAZ = 159 26 28.3932 From North
+  Ellipsoidal distance     S =     20874.6365 m
+  Delta height            dh =       219.0240 m
+  Mark-to-mark distance    D =     20880.6288 m
+   
+  DX =     -1971.2101 m   DN =     19556.9207 m
+  DY =     14124.5481 m   DE =     -7313.9160 m
+  DZ =     15251.6271 m   DU =       184.7812 m
+   
+  Zenith (mk-to-mk)       ZD =  89 29 34.65
+  Apparent zenith distance   =  89 28 46.33

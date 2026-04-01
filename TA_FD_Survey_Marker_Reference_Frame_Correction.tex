@@ -1,0 +1,804 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+
+\newcommand{\degree}{^\circ}
+
+\definecolor{TAblue}{RGB}{31,78,121}
+\definecolor{TAgray}{RGB}{89,89,89}
+\definecolor{TAred}{RGB}{192,0,0}
+\definecolor{TAgreen}{RGB}{0,128,0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=TAblue,
+    citecolor=TAblue,
+    urlcolor=TAblue
+}
+
+\titleformat{\section}{\Large\bfseries\color{TAblue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{TAblue!80!black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{TAblue!60!black}}{\thesubsubsection}{1em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{TAgray}Telescope Array --- Survey Marker Coordinate Correction}
+\fancyhead[R]{\small\color{TAgray}\thepage}
+\fancyfoot[C]{\small\color{TAgray}TA Internal Technical Note}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\sisetup{
+    group-separator={,},
+    detect-all,
+    per-mode=symbol
+}
+
+\newcommand{\Xmax}{X_{\text{max}}}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\color{TAblue}\rule{\textwidth}{2pt}}
+\vspace{0.5cm}
+
+{\Huge\bfseries\color{TAblue} Reference Frame Discrepancy\\[0.3cm]
+in TA Fluorescence Detector\\[0.3cm]
+Survey Marker Coordinates}
+
+\vspace{0.5cm}
+{\color{TAblue}\rule{\textwidth}{2pt}}
+
+\vspace{1.5cm}
+
+{\Large\color{TAgray} Impact on Opt-copter Calibration\\[0.2cm]
+and Implications for $\Xmax$ Reconstruction\\[0.2cm]
+with Corrected Telescope Mirror Positions}
+
+\vspace{2cm}
+
+{\large
+Stanton B.\ Thomas\\[0.3cm]
+\textit{Retired}\\[0.1cm]
+\texttt{ORCID: 0000-0002-8828-7856}\\[0.1cm]
+\textit{Formerly: Department of Physics \& Astronomy, University of Utah}
+}
+
+\vspace{2cm}
+
+{\large\color{TAgray} Telescope Array Project Internal Technical Note}
+
+\vspace{0.5cm}
+
+{\large April 2026 (Revised)}
+
+\vfill
+
+{\small\color{TAgray}
+All survey data from GPS campaign of March 2011.\\
+OPUS solutions processed by NGS, April 2011.\\
+Total station measurements reduced by S.B.\ Thomas, March--April 2011.\\
+Analysis, coordinate conversion, and telescope position reprocessing by S.B.\ Thomas, 2025--2026.}
+
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%======================================================================
+\section{Executive Summary}
+%======================================================================
+
+All eight original survey markers used for fluorescence detector (FD) telescope geometry at the three Telescope Array FD stations---Black Rock Mesa (BRM), Long Ridge (LR), and Middle Drum (MD)---are stored in the analysis database using NAD\,83(CORS96)(Epoch:2002.0000) ellipsoidal heights. The Opt-copter RTK-GPS reports positions in WGS\,84, which is operationally equivalent to the International Terrestrial Reference Frame (ITRF). The ellipsoidal height difference between these two frames at the TA site is approximately \textbf{0.73\,m}, with NAD\,83 heights being systematically higher than ITRF.
+
+This discrepancy produces a systematic elevation angle bias of approximately $+0.17\degree$ in the Opt-copter pointing direction analysis at a flight distance of 250\,m. This bias is uniform across all telescopes at each station and matches the observed $\Delta$Elevation offsets reported by Matsuzawa (2025) for Middle Drum and by Nakazawa (2020) for Black Rock Mesa. The effect propagates into shower geometry reconstruction: preliminary estimates suggest a systematic underestimation of $\Xmax$ on the order of $9\text{--}15~\text{g/cm}^2$ per $0.1\degree$ of pointing error, with corresponding energy biases of $\sim\!4\%$.
+
+The corrected ITRF00 coordinates are derived from inverse-variance weighted averages of all available OPUS static solutions. \textbf{In this revised report, the complete total station survey has been reprocessed using these corrected monument coordinates to produce updated telescope mirror positions for all three FD stations.} The reprocessing confirms that the relative mirror geometry is preserved to within 1\,mm, while the absolute positions shift by the expected frame-dependent offsets.
+
+No resurvey is required for the seven well-determined markers. One marker (CLF1) must be resurveyed due to a failed OPUS solution.
+
+%======================================================================
+\section{Background}
+%======================================================================
+
+\subsection{The Survey Campaign}
+
+In March 2011, a GPS survey campaign was conducted at all three TA FD stations to establish precise reference markers for the Opt-copter calibration system. A Trimble TRM41249.00 antenna was used for all occupations, with antenna heights recorded per session (Table~\ref{tab:antenna_heights}). Data were submitted to the NGS Online Positioning User Service (OPUS) for static processing. Each OPUS solution provides coordinates in two reference frames simultaneously:
+
+\begin{itemize}[nosep]
+    \item NAD\,83(CORS96)(Epoch:2002.0000) --- the North American datum
+    \item ITRF00 (at the observation epoch) --- the global reference frame
+\end{itemize}
+
+\noindent The NAD\,83 coordinates were entered into the TA analysis database and used for all subsequent telescope geometry computations, including the Opt-copter direction analysis.
+
+\begin{table}[H]
+\centering
+\caption{GPS antenna heights above mark for each observation session.}
+\label{tab:antenna_heights}
+\smallskip
+\begin{tabular}{@{}llc@{}}
+\toprule
+{Marker} & {Site} & {Antenna Height (m)} \\
+\midrule
+BR1  & Black Rock Mesa  & 1.056 \\
+BR2  & Black Rock Mesa  & 1.221 \\
+CLF1 & Central Laser    & 1.256 \\
+CLF2 & Central Laser    & 1.358 \\
+LR1  & Long Ridge       & 1.274 \\
+LR2  & Long Ridge       & 1.372 \\
+MD1  & Middle Drum      & 1.425 \\
+MD2  & Middle Drum      & 1.352 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Total Station Survey}
+
+In addition to the GPS monument positions, a total station survey was performed at each FD station to establish the three-dimensional positions of all telescope mirrors relative to the GPS-surveyed monuments. The total station measurements comprise:
+
+\begin{itemize}[nosep]
+    \item 105 individual measurements from 6 base stations to telescope mirrors and inter-station baselines
+    \item Azimuth, elevation angle, and slant distance for each observation
+    \item Multiple measurement sets at different instrument heights for redundancy
+    \item Observations to 15 mirrors (M00--M14) at Middle Drum and 12 mirrors (M00--M11) at Black Rock Mesa and Long Ridge
+\end{itemize}
+
+The raw measurements are stored in \texttt{Survey\_Record.csv} and processed by the survey reduction code (\texttt{survey\_processor.c}), which applies deflection-of-vertical corrections via the $\xi$ and $\eta$ parameters at each site, converts local azimuth/elevation/distance observations to geodetic coordinates through the base monument positions, and produces absolute telescope mirror positions in any specified reference frame.
+
+\subsection{The Reference Frame Problem}
+
+NAD\,83 and ITRF are distinct reference frames. NAD\,83 is fixed to the North American tectonic plate, while ITRF is an Earth-centered, Earth-fixed global frame that accounts for plate motion. At any given location, the two frames differ by a combination of rotation, translation, and scale parameters that vary with position and epoch. At the TA site ($\sim\!39.3\degree$\,N, $\sim\!113\degree$\,W), the dominant manifestation is a systematic difference in ellipsoidal height of approximately 0.73\,m, with smaller horizontal offsets of a few centimeters.
+
+The Opt-copter's onboard RTK-GPS receiver reports positions in WGS\,84. For all practical purposes, WGS\,84 and ITRF are identical at the centimeter level. When the analysis code computes the geometric relationship between the Opt-copter (in WGS\,84/ITRF) and the survey markers (stored in NAD\,83), the height discrepancy introduces a systematic error in the computed elevation angle.
+
+\subsection{Processing Pipeline}
+
+The survey reduction pipeline proceeds as follows:
+
+\begin{enumerate}[nosep]
+    \item Monument geodetic coordinates are loaded from the monument database for a specified reference frame.
+    \item Deflection-of-vertical parameters ($\xi$, $\eta$) are applied to each base station.
+    \item For each measurement set, the inter-monument baseline azimuth is computed and used to orient the total station observations to true north.
+    \item Each raw observation (azimuth, elevation, slant distance) is converted to local East/North/Up offsets relative to the base monument.
+    \item The ENU offsets are rotated from the local gravity frame to the geocentric frame via the deflection-of-vertical rotation, added to the base monument ECEF coordinates, and converted to geodetic coordinates.
+    \item Final telescope positions are expressed in geodetic coordinates (latitude, longitude, ellipsoidal height) and in ENU coordinates relative to a common origin at the Central Laser Facility.
+\end{enumerate}
+
+The critical point is that the absolute telescope positions inherit the reference frame of the input monument coordinates. When the monuments are in NAD\,83, the telescopes are in NAD\,83; when the monuments are in ITRF00, the telescopes are in ITRF00. The relative geometry between mirrors at a given station is independent of the reference frame choice.
+
+%======================================================================
+\section{OPUS Solutions and Height Discrepancies}
+%======================================================================
+
+\subsection{Original Markers}
+
+Table~\ref{tab:height_corrections} presents the ellipsoidal heights from both reference frames as reported in the OPUS solutions, along with the height difference $\Delta h = h_{\text{ITRF}} - h_{\text{NAD83}}$. Where multiple OPUS solutions exist for a single marker (from the comprehensive dataset in the survey archive), inverse-variance weighted averages are used.
+
+\begin{table}[H]
+\centering
+\caption{Ellipsoidal height comparison: NAD\,83 vs.\ ITRF for original survey markers. Heights are from OPUS static solutions (March 2011). The ITRF values represent inverse-variance weighted averages where multiple solutions exist.}
+\label{tab:height_corrections}
+\smallskip
+\begin{tabular}{@{}llS[table-format=4.3]S[table-format=4.3]S[table-format=1.3]S[table-format=1.3]c@{}}
+\toprule
+{Marker} & {Site} & {$h_{\text{NAD83}}$ (m)} & {$h_{\text{ITRF00}}$ (m)} & {$\sigma_h$ (m)} & {$\Delta h$ (m)} & {$n$} \\
+\midrule
+BR1  & Black Rock    & 1395.791 & 1395.053 & 0.004 & -0.738 & 7 \\
+BR2  & Black Rock    & 1395.405 & 1394.659 & 0.009 & -0.746 & 2 \\
+CLF2 & Central Laser & 1370.716 & 1369.979 & 0.016 & -0.737 & 2 \\
+LR1  & Long Ridge    & 1538.577 & 1537.847 & 0.009 & -0.730 & 3 \\
+LR2  & Long Ridge    & 1539.073 & 1538.340 & 0.010 & -0.733 & 2 \\
+MD1  & Middle Drum   & 1587.964 & 1587.222 & 0.004 & -0.742 & 3 \\
+MD2  & Middle Drum   & 1583.179 & 1582.449 & 0.020 & -0.730 & 1 \\
+\midrule
+\multicolumn{5}{r}{\textit{Weighted mean:}} & -0.736 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The height offsets are remarkably consistent, ranging from $-0.730$ to $-0.746$\,m, with a weighted mean of $-0.736$\,m. The smooth latitude-dependent variation is expected from the frame transformation geometry.
+
+\subsection{Rejected Solution: CLF1}
+
+The OPUS solution for marker CLF1 at the Central Laser Facility is unusable:
+
+\begin{itemize}[nosep]
+    \item Observations used: 500 / 19,489 (3\%)
+    \item Fixed ambiguities: 18 / 26 (69\%)
+    \item Overall RMS: 0.118\,m
+    \item Peak-to-peak vertical uncertainty: 130.347\,m
+\end{itemize}
+
+\noindent The CLF1 marker must be resurveyed. A short RTK occupation with EarthScope NTRIP corrections would provide a definitive ITRF position.
+
+\subsection{Mixed Reference Frames in the Current Database}
+
+An additional complication exists in the current marker database (Table~\ref{tab:mixed_frames}). Newer markers surveyed after the original 2011 campaign use a different NAD\,83 realization:
+
+\begin{table}[H]
+\centering
+\caption{Reference frame realizations in the current marker database.}
+\label{tab:mixed_frames}
+\smallskip
+\begin{tabular}{@{}lll@{}}
+\toprule
+{Markers} & {Reference Frame} & {Notes} \\
+\midrule
+BR1, BR2, CLF1, CLF2, & NAD\,83(CORS96) & Original 2011 survey \\
+LR1, LR2, MD1, MD2    & (Epoch:2002.0000) & \\
+\addlinespace
+BRNE, BRNW, BRSE, BRSW, & NAD\,83(2011) & Later survey \\
+MD3, MD4, MDNE, MDNW,   & (Epoch:2010.0000) & \\
+MDSE, MDSW               &                   & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent These two NAD\,83 realizations differ by 1--2\,cm in position, so the existing database is not even internally self-consistent, although this secondary effect is much smaller than the 0.73\,m NAD\,83-to-ITRF discrepancy.
+
+\subsection{Multi-Processor Cross-Validation}
+
+To assess the robustness of the monument coordinates, each marker's GPS observations were independently processed by four services operating in different reference frames:
+
+\begin{itemize}[nosep]
+    \item \textbf{OPUS} (NGS): ITRF00 at observation epoch --- used for the corrected coordinates
+    \item \textbf{CSRS-PPP} (NRCan): ITRF05
+    \item \textbf{AusPos} (Geoscience Australia): ITRF2005
+    \item \textbf{APPS} (JPL): WGS\,84/GRS80
+\end{itemize}
+
+The survey reduction code processes all four frames plus the new ITRF00 weighted averages (five frames total), enabling direct comparison of telescope positions across independent processing solutions. The inter-processor height spread for the original single-session solutions is 20--70\,mm, consistent with the different ITRF realizations and processing strategies employed by each service.
+
+%======================================================================
+\section{Impact on Opt-copter Direction Analysis}
+%======================================================================
+
+\subsection{Geometry of the Error}
+
+The Opt-copter flies at a distance $d \approx 250$\,m from the FD mirror center (MD measurements, Matsuzawa 2025) or $d \approx 300$\,m (BRM measurements, Nakazawa 2020). The monument coordinates define the reference geometry from which the Opt-copter's angular position is computed. If the monument height is biased by $\Delta h$, the computed elevation angle $\varepsilon$ to the Opt-copter is systematically offset by:
+
+\begin{equation}
+\delta\varepsilon \approx \arctan\!\left(\frac{|\Delta h|}{d}\right)
+\label{eq:elevation_error}
+\end{equation}
+
+\noindent For the MD station (using marker MD2, $\Delta h = -0.730$\,m, $d = 250$\,m):
+
+\begin{equation}
+\delta\varepsilon = \arctan\!\left(\frac{0.730}{250}\right) = 0.167\degree
+\end{equation}
+
+\noindent Because the NAD\,83 heights are higher than ITRF, the monument appears elevated relative to the Opt-copter's true frame, causing the Opt-copter to appear systematically \emph{lower} than expected. The direction analysis computes $\Delta\text{Elevation} = \text{GPS} - \text{CoG}$, so a monument that is too high produces a \emph{positive} $\Delta$Elevation offset: the GPS-derived position appears above the FD-measured center of gravity.
+
+\subsection{Comparison with Observed Offsets}
+
+\subsubsection{Middle Drum (Matsuzawa 2025)}
+
+The Opt-copter measurements at MD (September--October 2024) show a systematic positive elevation offset across all 14 telescopes:
+
+\begin{table}[H]
+\centering
+\caption{MD telescope pointing offsets from Matsuzawa (TA-ALL, June 2025). Upper row: even-numbered FDs; lower row: odd-numbered FDs.}
+\label{tab:md_offsets}
+\smallskip
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+FD ID & 02 & 04 & 06 & 08 & 10 & 12 & 14 \\
+\midrule
+$\Delta$Az ($\degree$) & $-0.02$ & $+0.01$ & $+0.01$ & $+0.03$ & $-0.02$ & $\pm 0.00$ & $-0.10$ \\
+$\Delta$El ($\degree$) & $+0.15$ & $+0.17$ & $+0.14$ & $+0.19$ & $+0.20$ & $+0.21$ & $+0.25$ \\
+\midrule
+FD ID & 01 & 03 & 05 & 07 & 09 & 11 & 13 \\
+\midrule
+$\Delta$Az ($\degree$) & $+0.03$ & $+0.10$ & $+0.06$ & $+0.04$ & $+0.07$ & $-0.01$ & $+0.03$ \\
+$\Delta$El ($\degree$) & $+0.14$ & $+0.07$ & $+0.11$ & $+0.19$ & $+0.18$ & $+0.22$ & $+0.23$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Key observations:
+
+\begin{itemize}[nosep]
+\item \textbf{All 14 telescopes show positive $\Delta$Elevation}, ranging from $+0.07\degree$ to $+0.25\degree$.
+\item The mean $\Delta$Elevation across all telescopes is approximately $+0.17\degree$.
+\item The azimuth offsets scatter around zero with no systematic bias.
+\item The predicted offset from the height discrepancy is $\arctan(0.730/250) = 0.167\degree$.
+\end{itemize}
+
+The agreement between the predicted $0.167\degree$ and the observed mean of ${\sim}0.17\degree$ is striking.
+
+\subsubsection{Black Rock Mesa (Nakazawa 2020)}
+
+The BRM Opt-copter measurements (2018--2019) show a different pattern: a systematic \emph{negative} elevation trend that increases with azimuth (telescope number). This is consistent with a combination of the height offset and an azimuthal pointing misalignment. The BRM results use markers BR1/BR2, which have $\Delta h \approx -0.74$\,m, predicting $\delta\varepsilon = \arctan(0.74/300) = 0.141\degree$ at the 300\,m flight distance used at BRM.
+
+The BRM elevation offsets range from $+0.11\degree$ (FD\,00) to $-0.19\degree$ (FD\,09), with a pattern suggesting real telescope-to-telescope pointing variations superimposed on the systematic height-induced bias.
+
+\subsection{Discrimination from Other Error Sources}
+
+The uniform, positive $\Delta$Elevation signature at MD is the key diagnostic. Other potential error sources would produce different signatures:
+
+\begin{table}[H]
+\centering
+\caption{Expected signatures of different systematic error sources.}
+\label{tab:signatures}
+\smallskip
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Error Source & $\Delta$Azimuth & $\Delta$Elevation \\
+\midrule
+Height bias (this work)     & $\sim\!0$, random & Uniform positive \\
+Azimuthal misalignment      & Systematic trend  & Correlated with Az \\
+RTK-GPS bias                & Random            & Random \\
+Mirror alignment            & Per-telescope     & Per-telescope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The MD data unambiguously match the height-bias signature.
+
+%======================================================================
+\section{Corrected Monument Coordinates}
+%======================================================================
+
+\subsection{ITRF00 Weighted Averages}
+
+The corrected coordinates are derived from the ITRF00 columns of the original OPUS reports. Where multiple solutions exist, inverse-variance weighted averages are used for the ellipsoidal height; simple averages are used for the Cartesian components. The conversion from ECEF Cartesian to geodetic coordinates was performed independently using WGS\,84 ellipsoid parameters ($a = 6{,}378{,}137.0$\,m, $1/f = 298.257223563$), and the computed ellipsoidal heights were verified against the paper's weighted averages with residuals not exceeding 3\,mm---consistent with the millimeter-level rounding of the input XYZ coordinates.
+
+\begin{table}[H]
+\centering
+\caption{Corrected ITRF00 coordinates for the seven original survey markers. These values should replace the NAD\,83 values currently in the analysis database.}
+\label{tab:corrected}
+\smallskip
+\small
+\begin{tabular}{@{}lS[table-format=-7.3]S[table-format=-7.3]S[table-format=7.3]S[table-format=4.3]S[table-format=1.3]@{}}
+\toprule
+{Marker} & {$X$ (m)} & {$Y$ (m)} & {$Z$ (m)} & {$h$ (m)} & {$\sigma_h$ (m)} \\
+\midrule
+BR1  & -1911712.757 & -4567269.863 & 4009427.954 & 1395.053 & 0.004 \\
+BR2  & -1911674.654 & -4567248.389 & 4009469.677 & 1394.659 & 0.009 \\
+CLF2 & -1924405.289 & -4553771.178 & 4018597.785 & 1369.979 & 0.016 \\
+LR1  & -1943693.195 & -4552383.580 & 4011197.010 & 1537.847 & 0.009 \\
+LR2  & -1943699.086 & -4552343.485 & 4011240.156 & 1538.340 & 0.010 \\
+MD1  & -1926374.126 & -4539528.317 & 4033980.925 & 1587.222 & 0.004 \\
+MD2  & -1926193.139 & -4539634.752 & 4033940.294 & 1582.449 & 0.020 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Geodetic Coordinates for the Monument Database}
+
+Table~\ref{tab:corrected_geodetic} presents the corrected monument positions in geodetic form as used by the survey processing code.
+
+\begin{table}[H]
+\centering
+\caption{ITRF00 geodetic coordinates for the seven original survey markers, as entered in the monument database (\texttt{Survey\_monuments.csv}).}
+\label{tab:corrected_geodetic}
+\smallskip
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+{Marker} & {Latitude (N)} & {Longitude (W)} & {$h$ (m)} \\
+\midrule
+BR1  & $39\degree\,11'\,18.09731''$ & $112\degree\,42'\,45.44194''$ & 1395.053 \\
+BR2  & $39\degree\,11'\,19.85288''$ & $112\degree\,42'\,44.32309''$ & 1394.659 \\
+CLF2 & $39\degree\,17'\,42.60609''$ & $112\degree\,54'\,31.40213''$ & 1369.979 \\
+LR1  & $39\degree\,12'\,28.32743''$ & $113\degree\,07'\,14.24494''$ & 1537.847 \\
+LR2  & $39\degree\,12'\,30.11953''$ & $113\degree\,07'\,15.12676''$ & 1538.340 \\
+MD1  & $39\degree\,28'\,22.04037''$ & $112\degree\,59'\,39.15793''$ & 1587.222 \\
+MD2  & $39\degree\,28'\,20.46140''$ & $112\degree\,59'\,30.45021''$ & 1582.449 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Newer Markers: Transformation from NAD\,83(2011)}
+
+For markers surveyed in NAD\,83(2011)(Epoch:2010.0), empirical transformation parameters were derived using two calibration points---BRSE and MD3---which have independent OPUS solutions in both NAD\,83(2011) and ITRF2014/IGS08. The Cartesian offsets at epoch 2010.0 are:
+
+\begin{align}
+\Delta X &= -0.781~\text{m} \notag\\
+\Delta Y &= +1.294~\text{m} \notag\\
+\Delta Z &= -0.059~\text{m} \notag\\
+\Delta h &\approx -0.72~\text{m}
+\end{align}
+
+\noindent Cross-validation between the BRSE and MD3 calibration points shows residuals of 2--5\,mm in XYZ, confirming the transformation is valid across the $\sim\!35$\,km extent of the FD triangle. These transformed positions carry larger uncertainties ($\sim\!1$--2\,cm) than the directly observed ITRF positions and should be confirmed by resurvey when practical.
+
+\subsection{Markers Requiring Action}
+
+\begin{table}[H]
+\centering
+\caption{Status of all survey markers.}
+\label{tab:status}
+\smallskip
+\begin{tabular}{@{}llll@{}}
+\toprule
+{Marker(s)} & {Status} & {Action} & {Priority} \\
+\midrule
+BR1, BR2, CLF2,     & ITRF00 values available & Replace in database & \textcolor{TAred}{\textbf{Immediate}} \\
+LR1, LR2, MD1, MD2  & from OPUS reports       &                     & \\
+\addlinespace
+CLF1                 & OPUS solution failed    & Resurvey required   & \textcolor{TAred}{\textbf{High}} \\
+\addlinespace
+BRNE, BRNW, BRSW,   & Approximate ITRF from   & Use transformed;    & Medium \\
+MD4, MDNE, MDNW,    & NAD\,83(2011) transform & resurvey to confirm & \\
+MDSE, MDSW           &                         &                     & \\
+\addlinespace
+BR3, BRSE, MD3       & Already in ITRF         & No action needed    & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Reprocessed Telescope Mirror Positions}
+%======================================================================
+
+\subsection{Processing Methodology}
+
+The complete total station survey (105 measurements from 6 base stations) was reprocessed using the corrected ITRF00 weighted-average monument coordinates as a fifth reference frame alongside the four original processors (OPUS single-solution, CSRS, AusPos, APPS). The processing code applies deflection-of-vertical corrections using the site-specific parameters in Table~\ref{tab:deflection}.
+
+\begin{table}[H]
+\centering
+\caption{Deflection of vertical parameters applied at each monument.}
+\label{tab:deflection}
+\smallskip
+\begin{tabular}{@{}lrr@{}}
+\toprule
+{Marker} & {$\eta$ (arcsec)} & {$\xi$ (arcsec)} \\
+\midrule
+BR1  & $-1.00$ & $-2.05$ \\
+BR2  & $-1.02$ & $-2.05$ \\
+LR1  & $-0.08$ & $-3.51$ \\
+LR2  & $-0.07$ & $-3.51$ \\
+MD1  & $+1.77$ & $-4.29$ \\
+MD2  & $+1.77$ & $-4.26$ \\
+CLF1 & $-1.42$ & $-1.88$ \\
+CLF2 & $-1.44$ & $-1.87$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent For each measurement set, the baseline azimuth between the two monuments at each station is first determined from the monument coordinates, and all target azimuths within that set are corrected to true north. Slant distance corrections of 30\,mm are applied for standard reflector targets (not cube reflectors) to account for the reflector offset. Instrument and target height corrections are applied to the vertical component.
+
+\subsection{Middle Drum Mirror Positions}
+
+Table~\ref{tab:md_mirrors} presents the averaged ITRF00 positions for the 14 telescope mirrors at the Middle Drum station, computed from measurements taken from base station MD1 at two instrument heights (1.527\,m and 1.535\,m). The ENU coordinates are relative to the CLF origin.
+
+\begin{table}[H]
+\centering
+\caption{Corrected ITRF00 telescope mirror positions: Middle Drum. Positions are averaged from multiple observation sets. ENU coordinates are relative to the CLF origin.}
+\label{tab:md_mirrors}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}lcccrrr@{}}
+\toprule
+{Mirror} & {Latitude (N)} & {Longitude (W)} & {$h$ (m)} & {$E$ (m)} & {$N$ (m)} & {$U$ (m)} \\
+\midrule
+MD\_M01 & $39\degree\,28'\,22.169''$ & $112\degree\,59'\,40.180''$ & 1589.240 & $-7381.4$ & 19538.0 & 184.9 \\
+MD\_M02 & $39\degree\,28'\,22.243''$ & $112\degree\,59'\,40.146''$ & 1589.138 & $-7380.6$ & 19540.3 & 184.8 \\
+MD\_M03 & $39\degree\,28'\,22.392''$ & $112\degree\,59'\,40.046''$ & 1589.244 & $-7378.2$ & 19544.9 & 184.9 \\
+MD\_M04 & $39\degree\,28'\,22.455''$ & $112\degree\,59'\,39.985''$ & 1589.145 & $-7376.7$ & 19546.8 & 184.8 \\
+MD\_M05 & $39\degree\,28'\,22.576''$ & $112\degree\,59'\,39.835''$ & 1589.240 & $-7373.1$ & 19550.6 & 184.9 \\
+MD\_M06 & $39\degree\,28'\,22.624''$ & $112\degree\,59'\,39.754''$ & 1589.139 & $-7371.2$ & 19552.0 & 184.8 \\
+MD\_M07 & $39\degree\,28'\,22.704''$ & $112\degree\,59'\,39.564''$ & 1589.242 & $-7366.6$ & 19554.5 & 184.9 \\
+MD\_M08 & $39\degree\,28'\,22.732''$ & $112\degree\,59'\,39.469''$ & 1589.137 & $-7364.4$ & 19555.4 & 184.8 \\
+MD\_M09 & $39\degree\,28'\,22.767''$ & $112\degree\,59'\,39.257''$ & 1589.255 & $-7359.3$ & 19556.4 & 184.9 \\
+MD\_M10 & $39\degree\,28'\,22.772''$ & $112\degree\,59'\,39.155''$ & 1589.143 & $-7356.9$ & 19556.6 & 184.8 \\
+MD\_M11 & $39\degree\,28'\,22.759''$ & $112\degree\,59'\,38.940''$ & 1589.246 & $-7351.7$ & 19556.2 & 184.9 \\
+MD\_M12 & $39\degree\,28'\,22.742''$ & $112\degree\,59'\,38.840''$ & 1589.144 & $-7349.3$ & 19555.7 & 184.8 \\
+MD\_M13 & $39\degree\,28'\,22.680''$ & $112\degree\,59'\,38.639''$ & 1589.249 & $-7344.5$ & 19553.8 & 184.9 \\
+MD\_M14 & $39\degree\,28'\,22.642''$ & $112\degree\,59'\,38.550''$ & 1589.152 & $-7342.4$ & 19552.6 & 184.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Black Rock Mesa Mirror Positions}
+
+Table~\ref{tab:br_mirrors} presents the averaged ITRF00 mirror positions for Black Rock Mesa, computed from measurements at base stations BR1 and BR2 across multiple instrument heights.
+
+\begin{table}[H]
+\centering
+\caption{Corrected ITRF00 telescope mirror positions: Black Rock Mesa. Positions are averaged from observations at BR1 and BR2.}
+\label{tab:br_mirrors}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}lcccrrr@{}}
+\toprule
+{Mirror} & {Latitude (N)} & {Longitude (W)} & {$h$ (m)} & {$E$ (m)} & {$N$ (m)} & {$U$ (m)} \\
+\midrule
+BR\_M00 & $39\degree\,11'\,17.897''$ & $112\degree\,42'\,42.622''$ & 1396.636 & 17014.5 & $-12042.4$ & $-7.5$ \\
+BR\_M01 & $39\degree\,11'\,17.901''$ & $112\degree\,42'\,42.607''$ & 1400.607 & 17014.9 & $-12042.3$ & $-3.5$ \\
+BR\_M02 & $39\degree\,11'\,17.755''$ & $112\degree\,42'\,42.591''$ & 1396.638 & 17015.3 & $-12046.7$ & $-7.5$ \\
+BR\_M03 & $39\degree\,11'\,17.755''$ & $112\degree\,42'\,42.575''$ & 1400.604 & 17015.7 & $-12046.8$ & $-3.5$ \\
+BR\_M04 & $39\degree\,11'\,18.142''$ & $112\degree\,42'\,42.518''$ & 1396.639 & 17017.0 & $-12034.8$ & $-7.5$ \\
+BR\_M05 & $39\degree\,11'\,18.139''$ & $112\degree\,42'\,42.504''$ & 1400.606 & 17017.4 & $-12034.9$ & $-3.5$ \\
+BR\_M06 & $39\degree\,11'\,18.015''$ & $112\degree\,42'\,42.599''$ & 1396.639 & 17015.1 & $-12038.7$ & $-7.5$ \\
+BR\_M07 & $39\degree\,11'\,18.007''$ & $112\degree\,42'\,42.588''$ & 1400.606 & 17015.4 & $-12039.0$ & $-3.5$ \\
+BR\_M08 & $39\degree\,11'\,18.294''$ & $112\degree\,42'\,42.248''$ & 1396.642 & 17023.5 & $-12030.1$ & $-7.5$ \\
+BR\_M09 & $39\degree\,11'\,18.285''$ & $112\degree\,42'\,42.239''$ & 1400.617 & 17023.7 & $-12030.4$ & $-3.5$ \\
+BR\_M10 & $39\degree\,11'\,18.228''$ & $112\degree\,42'\,42.411''$ & 1396.646 & 17019.6 & $-12032.2$ & $-7.4$ \\
+BR\_M11 & $39\degree\,11'\,18.217''$ & $112\degree\,42'\,42.406''$ & 1400.609 & 17019.7 & $-12032.5$ & $-3.5$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Long Ridge Mirror Positions}
+
+Table~\ref{tab:lr_mirrors} presents the averaged ITRF00 mirror positions for Long Ridge, computed from measurements at base stations LR1 and LR2.
+
+\begin{table}[H]
+\centering
+\caption{Corrected ITRF00 telescope mirror positions: Long Ridge.}
+\label{tab:lr_mirrors}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}lcccrrr@{}}
+\toprule
+{Mirror} & {Latitude (N)} & {Longitude (W)} & {$h$ (m)} & {$E$ (m)} & {$N$ (m)} & {$U$ (m)} \\
+\midrule
+LR\_M00 & $39\degree\,12'\,28.728''$ & $113\degree\,07'\,17.213''$ & 1544.667 & $-18377.1$ & $-9854.7$ & 140.6 \\
+LR\_M01 & $39\degree\,12'\,28.718''$ & $113\degree\,07'\,17.217''$ & 1548.621 & $-18377.2$ & $-9855.0$ & 144.5 \\
+LR\_M02 & $39\degree\,12'\,28.810''$ & $113\degree\,07'\,17.365''$ & 1544.667 & $-18380.7$ & $-9852.2$ & 140.6 \\
+LR\_M03 & $39\degree\,12'\,28.802''$ & $113\degree\,07'\,17.374''$ & 1548.622 & $-18381.0$ & $-9852.4$ & 144.5 \\
+LR\_M04 & $39\degree\,12'\,28.498''$ & $113\degree\,07'\,17.059''$ & 1544.672 & $-18373.4$ & $-9861.8$ & 140.6 \\
+LR\_M05 & $39\degree\,12'\,28.493''$ & $113\degree\,07'\,17.071''$ & 1548.628 & $-18373.7$ & $-9862.0$ & 144.5 \\
+LR\_M06 & $39\degree\,12'\,28.634''$ & $113\degree\,07'\,17.121''$ & 1544.682 & $-18374.9$ & $-9857.6$ & 140.6 \\
+LR\_M07 & $39\degree\,12'\,28.631''$ & $113\degree\,07'\,17.135''$ & 1548.632 & $-18375.3$ & $-9857.7$ & 144.5 \\
+LR\_M08 & $39\degree\,12'\,28.243''$ & $113\degree\,07'\,17.108''$ & 1544.684 & $-18374.6$ & $-9869.7$ & 140.6 \\
+LR\_M09 & $39\degree\,12'\,28.245''$ & $113\degree\,07'\,17.122''$ & 1548.643 & $-18375.0$ & $-9869.6$ & 144.5 \\
+LR\_M10 & $39\degree\,12'\,28.381''$ & $113\degree\,07'\,17.055''$ & 1544.680 & $-18373.4$ & $-9865.4$ & 140.6 \\
+LR\_M11 & $39\degree\,12'\,28.385''$ & $113\degree\,07'\,17.067''$ & 1548.629 & $-18373.7$ & $-9865.3$ & 144.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Validation of Reprocessed Positions}
+%======================================================================
+
+\subsection{Self-Consistency of XYZ-to-Geodetic Conversion}
+
+The ITRF00 monument coordinates were originally reported in ECEF Cartesian form (Table~\ref{tab:corrected}). Conversion to geodetic coordinates for the monument database was performed using the WGS\,84 Bowring iterative method. The computed ellipsoidal heights were compared against the inverse-variance weighted average heights to verify self-consistency:
+
+\begin{table}[H]
+\centering
+\caption{Self-consistency check: computed ellipsoidal height from XYZ conversion vs.\ inverse-variance weighted average height from OPUS reports.}
+\label{tab:xyz_validation}
+\smallskip
+\begin{tabular}{@{}lS[table-format=4.3]S[table-format=4.3]S[table-format=1.4]@{}}
+\toprule
+{Marker} & {$h_{\text{computed}}$ (m)} & {$h_{\text{weighted avg}}$ (m)} & {Residual (m)} \\
+\midrule
+BR1  & 1395.053 & 1395.053 & 0.0001 \\
+BR2  & 1394.661 & 1394.659 & 0.0017 \\
+CLF2 & 1369.979 & 1369.979 & 0.0002 \\
+LR1  & 1537.846 & 1537.847 & 0.0009 \\
+LR2  & 1538.340 & 1538.340 & 0.0003 \\
+MD1  & 1587.219 & 1587.222 & 0.0029 \\
+MD2  & 1582.449 & 1582.449 & 0.0004 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The maximum residual is 2.9\,mm (MD1), consistent with the millimeter-level rounding of the input XYZ coordinates in Table~\ref{tab:corrected}. The paper's weighted-average heights are used in the monument database.
+
+\subsection{Monument Height Verification}
+
+The base monument heights used by the processing code in ITRF00 mode were verified against Table~\ref{tab:corrected}:
+
+\begin{table}[H]
+\centering
+\caption{Verification that the ITRF00 monument heights loaded by the processing code match the target values from Table~\ref{tab:corrected}.}
+\label{tab:monument_verification}
+\smallskip
+\begin{tabular}{@{}lS[table-format=4.3]S[table-format=4.3]c@{}}
+\toprule
+{Marker} & {$h_{\text{code}}$ (m)} & {$h_{\text{Table 5}}$ (m)} & {Match} \\
+\midrule
+BR1  & 1395.053 & 1395.053 & \textcolor{TAgreen}{\checkmark} \\
+BR2  & 1394.659 & 1394.659 & \textcolor{TAgreen}{\checkmark} \\
+LR1  & 1537.847 & 1537.847 & \textcolor{TAgreen}{\checkmark} \\
+LR2  & 1538.340 & 1538.340 & \textcolor{TAgreen}{\checkmark} \\
+MD1  & 1587.222 & 1587.222 & \textcolor{TAgreen}{\checkmark} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent All five base monument heights match exactly. MD2 and CLF2 are used only as targets (not base stations) in the total station survey and so do not appear as base stations in the processing output.
+
+\subsection{ITRF00 Weighted Average vs.\ OPUS Single-Solution Comparison}
+
+The ITRF00 weighted averages differ from the OPUS single-session solutions by small amounts reflecting the improvement from multi-solution averaging. Table~\ref{tab:itrf_vs_opus} summarizes the height differences at the telescope mirror level, grouped by base station:
+
+\begin{table}[H]
+\centering
+\caption{Mean height difference between ITRF00 weighted-average and OPUS single-solution telescope positions, grouped by base station. Positive values indicate the weighted average is higher.}
+\label{tab:itrf_vs_opus}
+\smallskip
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+{Base} & {$\overline{\Delta h}$ (mm)} & {$n_{\text{targets}}$} & {Notes} \\
+\midrule
+BR1 & $+4.0$ & 8 & 7 OPUS solutions averaged \\
+BR2 & $+1.0$ & 8 & 2 OPUS solutions averaged \\
+LR1 & $-1.0$ & 7 & 3 OPUS solutions averaged \\
+LR2 & $\phantom{+}0.0$ & 7 & 2 OPUS solutions averaged \\
+MD1 & $\phantom{+}0.0$ & 16 & 3 OPUS solutions averaged \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The differences are uniform within each base station (all targets observed from the same base shift by the same amount), confirming that the offset originates solely from the base monument height difference and that the total station measurement geometry is unaffected by the reference frame choice.
+
+\subsection{Inter-Mirror Distance Consistency}
+
+The relative geometry between mirrors must be independent of the reference frame. Table~\ref{tab:distances} shows representative inter-mirror distances computed from the averaged positions in both the OPUS and ITRF00 frames:
+
+\begin{table}[H]
+\centering
+\caption{Inter-mirror 3D distances: OPUS single-solution vs.\ ITRF00 weighted average. All distances in meters. Residuals confirm that the relative mirror geometry is frame-independent.}
+\label{tab:distances}
+\smallskip
+\begin{tabular}{@{}llS[table-format=2.4]S[table-format=2.4]S[table-format=1.1]@{}}
+\toprule
+{Mirror 1} & {Mirror 2} & {$d_{\text{OPUS}}$ (m)} & {$d_{\text{ITRF00}}$ (m)} & {$\Delta d$ (mm)} \\
+\midrule
+BR\_M00 & BR\_M01 & 3.9889 & 3.9889 & 0.0 \\
+BR\_M02 & BR\_M03 & 3.9818 & 3.9818 & 0.0 \\
+BR\_M04 & BR\_M05 & 3.9835 & 3.9835 & 0.0 \\
+BR\_M08 & BR\_M09 & 3.9891 & 3.9891 & 0.0 \\
+BR\_M10 & BR\_M11 & 3.9802 & 3.9801 & -0.1 \\
+\addlinespace
+MD\_M01 & MD\_M02 & 2.4378 & 2.4378 & 0.0 \\
+MD\_M05 & MD\_M06 & 2.4390 & 2.4390 & 0.0 \\
+MD\_M09 & MD\_M10 & 2.4375 & 2.4365 & -1.0 \\
+MD\_M11 & MD\_M12 & 2.4316 & 2.4314 & -0.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Inter-mirror distances agree to within 1\,mm across frames, well below the total station measurement precision. The largest residual (1.0\,mm for MD\_M09--M10) is attributable to the slightly different weighting of observations when base coordinates change at the sub-millimeter level.
+
+\subsection{Cross-Frame Height Comparison for Telescope Mirrors}
+
+Table~\ref{tab:cross_frame} presents the ellipsoidal heights of selected telescope mirrors as computed in all five reference frames, illustrating the systematic height offsets between frames:
+
+\begin{table}[H]
+\centering
+\caption{Telescope mirror heights across five reference frames. All values in meters. The ITRF00 column represents the corrected positions for the analysis database.}
+\label{tab:cross_frame}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}lS[table-format=4.3]S[table-format=4.3]S[table-format=4.3]S[table-format=4.3]S[table-format=4.3]@{}}
+\toprule
+{Mirror} & {OPUS} & {CSRS} & {AusPos} & {APPS} & {\textbf{ITRF00}} \\
+\midrule
+BR\_M00 & 1396.632 & 1396.652 & 1396.662 & 1396.704 & \textbf{1396.636} \\
+BR\_M04 & 1396.635 & 1396.655 & 1396.665 & 1396.707 & \textbf{1396.639} \\
+BR\_M10 & 1396.645 & 1396.661 & 1396.666 & 1396.680 & \textbf{1396.646} \\
+\addlinespace
+LR\_M00 & 1544.667 & 1544.669 & 1544.675 & 1544.710 & \textbf{1544.667} \\
+LR\_M04 & 1544.672 & 1544.674 & 1544.680 & 1544.715 & \textbf{1544.672} \\
+LR\_M10 & 1544.681 &      {---} &  1544.708 &     {---} & \textbf{1544.680} \\
+\addlinespace
+MD\_M01 & 1589.240 & 1589.255 & 1589.243 & 1589.265 & \textbf{1589.240} \\
+MD\_M07 & 1589.242 & 1589.257 & 1589.245 & 1589.267 & \textbf{1589.242} \\
+MD\_M14 & 1589.152 &     {---} &     {---} &     {---} & \textbf{1589.152} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The ITRF00 weighted-average values are closest to the OPUS single-solution values, as expected since both represent ITRF00 coordinates. The CSRS, AusPos, and APPS values are systematically higher by 15--70\,mm due to differences between the ITRF realizations used by each service.
+
+%======================================================================
+\section{Implications for Physics Analysis}
+%======================================================================
+
+\subsection{Impact on $\Xmax$ Reconstruction}
+
+Tokuno et al.\ (unpublished; cited in Nakazawa 2020, slide 26) established that a $0.1\degree$ FD pointing uncertainty produces systematic uncertainties of approximately 4\% in energy and $9~\text{g/cm}^2$ in $\Xmax$. The observed systematic elevation bias of $\sim\!0.17\degree$ therefore implies:
+
+\begin{itemize}[nosep]
+\item Energy systematic: $\sim\!7\%$
+\item $\Xmax$ systematic: $\sim\!15~\text{g/cm}^2$
+\end{itemize}
+
+\noindent For context, the mean $\Xmax$ difference between proton and iron primaries at $10^{19.5}$\,eV is approximately $100~\text{g/cm}^2$ in current hadronic interaction models. A $15~\text{g/cm}^2$ systematic bias is therefore significant for composition studies.
+
+As noted by Nakazawa (2020, slide 12): ``If the copter measurement is true, the $\Xmax$ of the current analysis is underestimated.'' The present work identifies the root cause of the copter measurement discrepancy as a reference frame error in the survey marker coordinates, not a deficiency of the Opt-copter system or the FD optics.
+
+\subsection{Effect on Telescope-Specific Calibration}
+
+The height offset affects all telescopes at a given station equally, since they all reference the same survey markers. This means:
+
+\begin{itemize}[nosep]
+\item The relative telescope-to-telescope geometry within each station is unaffected.
+\item Total station measurements anchored to the biased markers shift rigidly.
+\item The absolute pointing of the entire station shifts in elevation.
+\item Stereo reconstruction using two stations (e.g., BRM $\times$ LR) is affected because each station has a slightly different height bias.
+\end{itemize}
+
+\noindent The reprocessed telescope positions in Section~5 confirm quantitatively that the relative geometry is preserved: inter-mirror distances are stable to within 1\,mm (Table~\ref{tab:distances}), and the height offsets between frames are uniform within each station (Table~\ref{tab:itrf_vs_opus}).
+
+\subsection{Effect on Stereo Reconstruction}
+
+The NAD\,83-to-ITRF height offsets vary from station to station (Table~\ref{tab:height_corrections}): $\Delta h \approx -0.74$\,m at BRM, $-0.73$\,m at LR, and $-0.74$\,m at MD. The inter-station differences are:
+
+\begin{itemize}[nosep]
+\item BRM vs.\ LR: $\sim\!10$\,mm
+\item BRM vs.\ MD: $\sim\!5$\,mm
+\item LR vs.\ MD: $\sim\!10$\,mm
+\end{itemize}
+
+\noindent These inter-station height differences translate to sub-milliradian angular offsets in stereo reconstruction---below the angular resolution of the FD telescopes. The dominant effect is the common-mode $\sim\!0.73$\,m vertical bias, not the station-to-station variation.
+
+%======================================================================
+\section{Recommendations}
+%======================================================================
+
+\begin{enumerate}[nosep]
+\item \textbf{Immediate:} Replace the NAD\,83 ellipsoidal heights in the analysis database with the ITRF00 values from Table~\ref{tab:corrected} for all seven original markers. The corresponding geodetic coordinates for the database are given in Table~\ref{tab:corrected_geodetic}.
+
+\item \textbf{Immediate:} Replace the telescope mirror positions in the analysis database with the corrected ITRF00 values from Tables~\ref{tab:md_mirrors}, \ref{tab:br_mirrors}, and \ref{tab:lr_mirrors}.
+
+\item \textbf{Short-term:} Resurvey CLF1 using a dual-frequency GNSS receiver (e.g., SparkFun RTK Facet) with EarthScope NTRIP corrections in ITRF.
+
+\item \textbf{Short-term:} Verify the transformed NAD\,83(2011) marker positions (BRNE, BRNW, BRSW, MD4, MDNE, MDNW, MDSE, MDSW) with brief RTK occupations.
+
+\item \textbf{Medium-term:} Reprocess the Opt-copter direction analysis at all three FD stations using corrected coordinates to confirm that the systematic elevation bias is resolved.
+
+\item \textbf{Medium-term:} Evaluate the impact on published $\Xmax$ and energy spectrum results by rerunning the shower reconstruction with corrected FD geometry.
+
+\item \textbf{Long-term:} Bring all marker coordinates into a single ITRF2014 realization at a common epoch using the NGS Horizontal Time-Dependent Positioning (HTDP) utility, ensuring full consistency for future analyses.
+\end{enumerate}
+
+%======================================================================
+\section{Conclusion}
+%======================================================================
+
+A systematic 0.73\,m vertical bias in the fluorescence detector survey marker coordinates has been identified, traced to the use of NAD\,83 ellipsoidal heights where the Opt-copter analysis requires ITRF/WGS\,84 values. The corrected ITRF00 coordinates exist in the original 2011 OPUS reports and require no new observations for the seven primary markers. The predicted elevation angle bias of $0.167\degree$ at 250\,m flight distance matches the $+0.17\degree$ mean offset independently measured by Matsuzawa (2025) across all 14 Middle Drum telescopes, providing strong confirmation that this reference frame discrepancy is the dominant source of the systematic elevation error observed in the Opt-copter direction analysis over the past seven years of measurements.
+
+In this revised report, the complete total station survey has been reprocessed using ITRF00 inverse-variance weighted-average monument coordinates, producing corrected telescope mirror positions for all three FD stations (38 mirrors total: 14 at Middle Drum, 12 at Black Rock Mesa, 12 at Long Ridge). The reprocessing confirms:
+
+\begin{itemize}[nosep]
+\item The corrected monument coordinates are loaded exactly as specified (0.0\,mm residual vs.\ Table~\ref{tab:corrected}).
+\item The XYZ-to-geodetic conversion is self-consistent to within 3\,mm.
+\item The relative mirror geometry is preserved across reference frames (inter-mirror distances agree to within 1\,mm).
+\item The height shifts between the ITRF00 weighted average and the OPUS single-session solution are uniform within each station ($+4$\,mm at BR1, $+1$\,mm at BR2, $-1$\,mm at LR1, 0\,mm at LR2 and MD1), reflecting only the improvement from multi-solution averaging.
+\item The processing code correctly handles the missing CLF1 ITRF00 entry without affecting other stations.
+\end{itemize}
+
+\noindent The corrected positions in Tables~\ref{tab:md_mirrors}--\ref{tab:lr_mirrors} are ready for immediate deployment in the analysis database.
+
+\vspace{1cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+{\small
+\noindent\textbf{Acknowledgments.} The survey markers were established through the efforts of the University of Utah TA group. The Opt-copter system was developed and operated by the Shinshu University group under the direction of Prof.\ Y.\ Tameda. The author thanks A.\ Nakazawa and A.\ Matsuzawa for their thorough and careful analyses that made the systematic elevation bias clearly visible in the data.
+
+\vspace{0.5cm}
+
+\noindent\textbf{Data Availability.} The complete OPUS solution reports, the multi-solution averaging analysis, the ITRF conversion spreadsheet (\texttt{TA\_Markers\_ITRF\_Conversion.xlsx}), the survey reduction source code (\texttt{survey\_processor.c}), the raw total station measurements (\texttt{Survey\_Record.csv}), and the reprocessed output files are available from the author. All original OPUS datasheets are archived and can be resubmitted to OPUS for independent verification.
+
+\vspace{0.5cm}
+
+\noindent\textbf{Software.} The survey reduction code was modified to support five reference frames (OPUS, CSRS, AusPos, APPS, ITRF00 weighted average) and recompiled for the current analysis. The XYZ-to-geodetic conversion was independently verified using a Python implementation of the WGS\,84 Bowring method (\texttt{xyz2csv.py}). Source code for all processing tools is maintained in the survey archive.
+}
+
+\end{document}

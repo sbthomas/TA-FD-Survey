@@ -1,0 +1,25 @@
+   
+  First  Station : REF                           
+  ---------------- 
+  X =   -1926332.9213 m  LAT =  39 28 22.02550 North 
+  Y =   -4539546.5551 m  LON = 112 59 37.27339 West  
+  Z =    4033980.9013 m  EHT =      1587.7390  Meters
+   
+  Second Station : M21                           
+  ---------------- 
+  X =   -1926329.3943 m  LAT =  39 28 22.78387 North 
+  Y =   -4539533.0122 m  LON = 112 59 37.35886 West  
+  Z =    4033999.8060 m  EHT =      1589.0700  Meters
+   
+  Forward azimuth        FAZ = 355  0 28.4000 From North
+  Back azimuth           BAZ = 175  0 28.3457 From North
+  Ellipsoidal distance     S =        23.4774 m
+  Delta height            dh =         1.3310 m
+  Mark-to-mark distance    D =        23.5210 m
+   
+  DX =         3.5270 m   DN =        23.3942 m
+  DY =        13.5428 m   DE =        -2.0435 m
+  DZ =        18.9047 m   DU =         1.3310 m
+   
+  Zenith (mk-to-mk)       ZD =  86 45 22.09
+  Apparent zenith distance   =  86 45 22.03

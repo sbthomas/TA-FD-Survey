@@ -1,0 +1,55 @@
+FILE: BR1.11o 000188873
+
+                             NGS OPUS SOLUTION REPORT
+                             ========================
+
+All computed coordinate accuracies are listed as peak-to-peak values.
+For additional information: http://www.ngs.noaa.gov/OPUS/about.html#accuracy
+
+     USER: veganpops@gmail.com                     DATE: March 26, 2011
+RINEX FILE: br1_081t.11o                            TIME: 17:38:46 UTC
+
+
+ SOFTWARE: page5  1009.28 master50.pl 121510      START: 2011/03/22  19:52:00
+ EPHEMERIS: igr16282.eph [rapid]                    STOP: 2011/03/23  14:02:00
+ NAV FILE: brdc0810.11n                        OBS USED: 46555 / 47584   :  98%
+ ANT NAME: TRM41249.00     NONE             # FIXED AMB:   117 /   131   :  89%
+ARP HEIGHT: 1.056                            OVERALL RMS: 0.016(m)
+
+
+ REF FRAME: NAD_83(CORS96)(EPOCH:2002.0000)            ITRF00 (EPOCH:2011.2225)
+
+        X:     -1911711.968(m)   0.008(m)          -1911712.755(m)   0.008(m)
+        Y:     -4567271.166(m)   0.033(m)          -4567269.873(m)   0.033(m)
+        Z:      4009428.040(m)   0.020(m)           4009427.956(m)   0.020(m)
+
+      LAT:   39 11 18.08110      0.034(m)        39 11 18.09720      0.034(m)
+    E LON:  247 17 14.60934      0.009(m)       247 17 14.55830      0.009(m)
+    W LON:  112 42 45.39066      0.009(m)       112 42 45.44170      0.009(m)
+   EL HGT:         1395.803(m)   0.021(m)              1395.061(m)   0.021(m)
+ ORTHO HGT:         1415.778(m)   0.039(m) [NAVD88 (Computed using GEOID09)]
+
+                       UTM COORDINATES    STATE PLANE COORDINATES
+                        UTM (Zone 12)         SPC (4302 UT C)
+Northing (Y) [meters]     4339075.981          2095634.752
+Easting (X)  [meters]      352091.725           395242.344
+Convergence  [degrees]    -1.08234502          -0.77677106
+Point Scale                0.99986937           0.99996205
+Combined Factor            0.99965046           0.99974311
+
+US NATIONAL GRID DESIGNATOR: 12SUJ5209139075(NAD 83)
+
+
+
+                             BASE STATIONS USED
+PID       DESIGNATION                        LATITUDE    LONGITUDE DISTANCE(m)
+DL6904 NVSV SPRING VALLEY CORS ARP         N385500.492 W1142409.605  149401.0
+DH3864 P105 DELTAMUNI_UT2004 CORS ARP      N392315.139 W1123014.668   28513.9
+DI2242 P009 MARYSVALE_UT2006 CORS ARP      N382847.732 W1121321.725   89433.3
+
+                NEAREST NGS PUBLISHED CONTROL POINT
+KO0203      C 180                          N391052.708 W1124207.804    1194.6
+
+This position and the above vector components were computed without any
+knowledge by the National Geodetic Survey regarding the equipment or
+field operating procedures used.

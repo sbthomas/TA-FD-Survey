@@ -1,0 +1,27 @@
+# Claude Code local settings
+.claude/
+
+# Compiled binaries
+progs/survey_processor
+progs/survey_distances
+progs/survey_summary
+progs/survey_full
+progs/survey_averager
+progs/foo
+
+# Emacs backup/autosave files
+*~
+\#*\#
+
+# macOS
+.DS_Store
+
+# Output files (regenerated from source)
+progs/results_5frames.csv
+progs/distances_5frames.txt
+progs/full_5frames.csv
+progs/summary_stderr.txt
+
+# PAW/CERNLIB
+progs/paw.metafile
+progs/last.kumacold

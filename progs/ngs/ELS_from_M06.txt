@@ -1,0 +1,26 @@
+   
+   
+  First  Station : M06                           
+  ---------------- 
+  X =   -1911650.9309 m  LAT =  39 11 18.01438 North 
+  Y =   -4567298.8252 m  LON = 112 42 42.60018 West  
+  Z =    4009426.9726 m  EHT =      1396.6380  Meters
+   
+  Second Station : ELS                           
+  ---------------- 
+  X =   -1911711.4939 m  LAT =  39 11 19.91717 North 
+  Y =   -4567234.0432 m  LON = 112 42 45.96956 West  
+  Z =    4009473.0435 m  EHT =      1397.5560  Meters
+   
+  Forward azimuth        FAZ = 305 58  4.5599 From North
+  Back azimuth           BAZ = 125 58  2.4309 From North
+  Ellipsoidal distance     S =        99.9094 m
+  Delta height            dh =         0.9180 m
+  Mark-to-mark distance    D =        99.9355 m
+   
+  DX =       -60.5630 m   DN =        58.6929 m
+  DY =        64.7819 m   DE =       -80.8789 m
+  DZ =        46.0708 m   DU =         0.9172 m
+   
+  Zenith (mk-to-mk)       ZD =  89 28 26.86
+  Apparent zenith distance   =  89 28 26.62

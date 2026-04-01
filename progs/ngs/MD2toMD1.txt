@@ -1,0 +1,26 @@
+   
+   
+  First  Station : MD2                           
+  ---------------- 
+  X =   -1926193.1293 m  LAT =  39 28 20.46168 North 
+  Y =   -4539634.7658 m  LON = 112 59 30.44961 West  
+  Z =    4033940.3122 m  EHT =      1582.4680  Meters
+   
+  Second Station : MD1                           
+  ---------------- 
+  X =   -1926374.1204 m  LAT =  39 28 22.04140 North 
+  Y =   -4539528.3092 m  LON = 112 59 39.15784 West  
+  Z =    4033980.9582 m  EHT =      1587.2330  Meters
+   
+  Forward azimuth        FAZ = 283 10 27.9066 From North
+  Back azimuth           BAZ = 103 10 22.3707 From North
+  Ellipsoidal distance     S =       213.7698 m
+  Delta height            dh =         4.7650 m
+  Mark-to-mark distance    D =       213.8759 m
+   
+  DX =      -180.9911 m   DN =        48.7337 m
+  DY =       106.4567 m   DE =      -208.1952 m
+  DZ =        40.6460 m   DU =         4.7614 m
+   
+  Zenith (mk-to-mk)       ZD =  88 43 27.64
+  Apparent zenith distance   =  88 43 27.15
