@@ -150,17 +150,152 @@ MD2  & Middle Drum      & 1.352 \\
 \end{table}
 
 \subsection{The Total Station Survey}
+\label{sec:total_station}
 
-In addition to the GPS monument positions, a total station survey was performed at each FD station to establish the three-dimensional positions of all telescope mirrors relative to the GPS-surveyed monuments. The total station measurements comprise:
+In addition to the GPS monument positions, a total station survey was performed at each FD station to establish the three-dimensional positions of all telescope mirrors relative to the GPS-surveyed monuments. This section provides sufficient detail for collaborators to reproduce the measurements, extend them to additional telescopes (e.g., TAx4), or verify the reduction independently.
+
+\subsubsection{Station Layout and Monument Pairs}
+
+Each FD station has two GPS-surveyed monuments, designated ``1'' and ``2,'' separated by a known baseline. The total station is set up over one monument and sights to the other to establish the absolute azimuth reference. The monument pairs and their approximate separations are:
 
 \begin{itemize}[nosep]
-    \item 105 individual measurements from 6 base stations to telescope mirrors and inter-station baselines
-    \item Azimuth, elevation angle, and slant distance for each observation
-    \item Multiple measurement sets at different instrument heights for redundancy
-    \item Observations to 15 mirrors (M00--M14) at Middle Drum and 12 mirrors (M00--M11) at Black Rock Mesa and Long Ridge
+    \item \textbf{Black Rock Mesa:} BR1--BR2, separated by $\sim\!60$\,m. BR1 observes mirrors M00--M05 (and M00--M05 from BR2 become M06--M11); BR2 observes M06--M11.
+    \item \textbf{Long Ridge:} LR1--LR2, separated by $\sim\!59$\,m. LR1 observes M06--M11; LR2 observes M00--M05.
+    \item \textbf{Middle Drum:} MD1--MD2, separated by $\sim\!701$\,m. MD1 observes all 14 mirrors M01--M14, plus the central reference target CXF.
+    \item \textbf{Central Laser Facility:} CLF1--CLF2, separated by $\sim\!592$\,m. Used for inter-station baseline only (no telescope mirrors at CLF).
 \end{itemize}
 
-The raw measurements are stored in \texttt{Survey\_Record.csv} and processed by the survey reduction code (\texttt{survey\_processor.c}), which applies deflection-of-vertical corrections via the $\xi$ and $\eta$ parameters at each site, converts local azimuth/elevation/distance observations to geodetic coordinates through the base monument positions, and produces absolute telescope mirror positions in any specified reference frame.
+At BRM and LR, the 12 mirrors are arranged in two tiers of six, with a lower tier at $\sim\!1.53$\,m and an upper tier at $\sim\!5.50$\,m above the telescope frame base (vertical separation $\sim\!3.97$\,m). The mirrors span approximately 18.5\,m in width. Adjacent mirrors in the same tier are separated by $\sim\!4$\,m.
+
+At MD, the 14 mirrors (M01--M14, with M00 as the central reference) are arranged in a single arc spanning $\sim\!41$\,m in width and $\sim\!10$\,m in depth, with odd-numbered mirrors offset vertically by 106.5\,mm relative to even-numbered mirrors.
+
+\subsubsection{Measurement Procedure}
+
+Each measurement set begins with the total station centered and leveled over a monument. The procedure for one set is:
+
+\begin{enumerate}[nosep]
+    \item Measure the instrument height above the monument mark (to the trunnion axis).
+    \item Sight to the partner monument (azimuth set to $0\degree\,0'\,0''$) to establish the baseline direction. Record the azimuth, elevation angle, and slant distance.
+    \item Without disturbing the horizontal circle, sight to each telescope mirror target in sequence. For each target, record:
+    \begin{itemize}[nosep]
+        \item Horizontal angle (azimuth) relative to the baseline: degrees, minutes, seconds
+        \item Vertical angle (elevation) above or below horizontal: sign, degrees, minutes, seconds
+        \item Slant distance $S$, horizontal distance $H$, and vertical distance $V$ (in feet)
+        \item Target height above the mirror surface (if a reflector offset was used)
+        \item Notes (reflector type, obstructions)
+    \end{itemize}
+    \item Repeat selected targets at different reflector heights ($\pm 0.181$\,m $\approx \pm 7\frac{1}{8}''$) to bracket the mirror surface and verify the mirror center elevation.
+\end{enumerate}
+
+Multiple measurement sets were taken at each base station with different instrument heights (Table~\ref{tab:measurement_sets}) to provide independent determinations that can be compared for consistency.
+
+\begin{table}[H]
+\centering
+\caption{Total station measurement sets. Each set comprises a baseline observation plus sightings to all accessible mirrors at the indicated instrument height.}
+\label{tab:measurement_sets}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}clcll@{}}
+\toprule
+{Set} & {Base} & {Inst.\ Height (m)} & {$n$ obs} & {Targets} \\
+\midrule
+1  & BR1  & 1.237 & 7  & BR2, M00--M05 \\
+2  & BR1  & 1.324 & 2  & BR2, ELS (cube reflector) \\
+3  & BR1  & 1.350 & 8  & BR2, M00, M02, M03 \\
+4  & BR1  & 1.392 & 11 & BR2, M00--M05 (with $\pm$offset heights) \\
+5  & BR2  & 1.304 & 2  & BR1, ELS (cube reflector) \\
+6  & BR2  & 1.390 & 14 & BR1, M06--M11 (with $\pm$offset heights) \\
+7  & BR2  & 1.441 & 6  & BR1, M06--M08, M10--M11 \\
+8  & CLF1 & 0.000 & 3  & CLF2, CLF (no instrument height) \\
+9  & CLF1 & 1.481 & 1  & CLF2 \\
+10 & LR1  & 1.470 & 9  & LR2, M06--M11 (with offsets) \\
+11 & LR2  & 1.424 & 11 & LR1, M00--M05 (with offsets) \\
+12 & MD1  & 1.527 & 16 & MD2, CXF, M01--M14 \\
+13 & MD1  & 1.535 & 15 & MD2, CXF, M01--M13 (cube refl.\ to MD2) \\
+14 & BR1  & 0.000 & 4  & LSR1, LSR2 (cube reflectors, no inst.\ height) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Reflector Types and Distance Corrections}
+
+Two reflector types were used:
+
+\begin{itemize}[nosep]
+    \item \textbf{Standard (prism) reflectors:} Used for all telescope mirror targets (M00--M14). These have a distance offset of 30\,mm between the reflector reference point and the prism center; the processing code adds this correction automatically for any target not flagged as a cube reflector.
+    \item \textbf{Cube (corner) reflectors:} Used for inter-station baselines (BR1$\leftrightarrow$BR2, MD1$\leftrightarrow$MD2), the ELS reference target, and long-range sightings (LSR1, LSR2). These have zero distance offset. Targets are flagged in the \texttt{note} column of \texttt{Survey\_Record.csv}.
+\end{itemize}
+
+\subsubsection{Offset Height Measurements}
+
+At BRM and LR, selected mirrors were observed with the reflector placed at three heights: at the mirror surface ($h_{\text{target}} = 0$), at $+0.178$\,m ($+7''$) above the surface, and at $-0.181$\,m ($-7\frac{1}{8}''$) below the surface. These offset measurements provide:
+
+\begin{itemize}[nosep]
+    \item Verification that the mirror center height is correctly determined
+    \item A direct measurement of the reflector-to-mirror-surface geometry
+    \item Redundancy for outlier detection
+\end{itemize}
+
+\noindent The processing code applies the target height correction by adding the instrument height and subtracting the target height from the computed vertical offset:
+\begin{equation}
+U_{\text{corrected}} = U_{\text{measured}} + h_{\text{instrument}} - h_{\text{target}}
+\end{equation}
+
+\subsubsection{Azimuth Calibration}
+
+The total station horizontal circle is arbitrary; absolute azimuths are established through the baseline measurement. At the start of each measurement set, the instrument sights to the partner monument and records the circle reading ($A_{\text{baseline,meas}}$). The true baseline azimuth ($A_{\text{baseline,true}}$) is computed from the monument geodetic coordinates. For all subsequent sightings in that set, the true azimuth is:
+
+\begin{equation}
+A_{\text{true}} = A_{\text{measured}} - A_{\text{baseline,meas}} + A_{\text{baseline,true}}
+\label{eq:azimuth_cal}
+\end{equation}
+
+\noindent The processing code computes $A_{\text{baseline,true}}$ from the monument coordinates in the selected reference frame using the geodetic inverse via the deflection-of-vertical rotation. When multiple baseline observations exist within one set, their computed azimuths are averaged; a consistency check rejects any baseline measurement deviating by more than $1/60\degree$ ($1'$) from the running mean.
+
+\subsubsection{Data Format}
+
+The raw measurements are stored in \texttt{Survey\_Record.csv} (also \texttt{progs/Survey\_Record.csv}) with the following columns:
+
+\begin{table}[H]
+\centering
+\caption{Column definitions for \texttt{Survey\_Record.csv}.}
+\label{tab:csv_format}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}cll@{}}
+\toprule
+{Column} & {Field} & {Description} \\
+\midrule
+1  & \texttt{name}     & Base station name (BR1, BR2, LR1, LR2, MD1, CLF1) \\
+2  & \texttt{height}   & Instrument height above mark (m) \\
+3  & \texttt{name}     & Target name (BR2, M00, ELS, etc.) \\
+4  & \texttt{height}   & Target/reflector height above mirror surface (m) \\
+5--7  & \texttt{dd,mm,ss} & Horizontal angle: degrees, minutes, seconds \\
+8  & \texttt{sgn}      & Vertical angle sign (\texttt{+} above, \texttt{-} below horizontal) \\
+9--11 & \texttt{dd,mm,ss} & Vertical angle: degrees, minutes, seconds \\
+12 & \texttt{S}        & Slant distance (feet) \\
+13 & \texttt{H}        & Horizontal distance (feet) \\
+14 & \texttt{V}        & Vertical distance (feet) \\
+15 & \texttt{note}     & Notes: ``cube reflector'', ``partially blocked'', etc. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Important:} The distances in the CSV are recorded in \textbf{feet}, not meters. The processing code uses the slant distance $S$ directly (the instrument's internal EDM reports in feet, but the values in the CSV file are the direct instrument readout). The slant distance $S$ is used as meters in the processing code; inspection of the results confirms that the total station was configured to report in meters despite the CSV header label.
+
+\subsubsection{Extending to TAx4 or Additional Targets}
+
+To extend this survey to additional telescopes (e.g., TAx4) or new reference points:
+
+\begin{enumerate}[nosep]
+    \item Establish two GPS monuments at the new station with $\geq 6$~hour static GNSS occupations. Submit to OPUS for ITRF coordinates.
+    \item Set up the total station over monument~1, measure instrument height, sight to monument~2 (azimuth $= 0\degree$).
+    \item Observe all targets (mirrors, reference points) recording azimuth, elevation, slant distance, and reflector type/height.
+    \item Repeat from monument~2 sighting to monument~1 for the complementary set of targets.
+    \item Add the new monument coordinates to \texttt{Survey\_monuments.csv} and append measurements to \texttt{Survey\_Record.csv}.
+    \item Add the new site to the \texttt{siteid()} and \texttt{stationid()} functions in \texttt{survey\_processor.c}, and provide deflection-of-vertical parameters (available from NGS or computed from a geoid model).
+    \item Compile and run: the code will process the new station alongside existing ones.
+\end{enumerate}
 
 \subsection{The Reference Frame Problem}
 
