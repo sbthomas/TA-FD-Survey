@@ -1,7 +1,0 @@
-scp BR2/BR2.11o sbthomas@shell.xmission.com:ftp/.
-scp LR1/LR1.11o sbthomas@shell.xmission.com:ftp/.
-scp LR2/LR2201103310000a.11o sbthomas@shell.xmission.com:ftp/.
-scp MD1/MDFD1201103240000a.11o sbthomas@shell.xmission.com:ftp/.
-scp MD2/MD2.11o sbthomas@shell.xmission.com:ftp/.
-scp CLF1/CLF1201103240000a.11o sbthomas@shell.xmission.com:ftp/.
-scp CLF2/CLF2_201103300000a.11o sbthomas@shell.xmission.com:ftp/.

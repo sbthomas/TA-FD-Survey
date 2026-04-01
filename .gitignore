@@ -25,3 +25,19 @@ progs/summary_stderr.txt
 # PAW/CERNLIB
 progs/paw.metafile
 progs/last.kumacold
+
+# Bulk archives and intermediate processing outputs
+*.tgz
+*.zip
+*.Z
+*.T00
+
+# Binary spreadsheet/PDF duplicates of CSV data
+*.ods
+*.xls
+
+# Directories not needed in repo
+files/
+presentation/
+progs/RCS/
+progs/ngs/
