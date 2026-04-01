@@ -794,11 +794,30 @@ In this revised report, the complete total station survey has been reprocessed u
 
 \vspace{0.5cm}
 
-\noindent\textbf{Data Availability.} The complete OPUS solution reports, the multi-solution averaging analysis, the ITRF conversion spreadsheet (\texttt{TA\_Markers\_ITRF\_Conversion.xlsx}), the survey reduction source code (\texttt{survey\_processor.c}), the raw total station measurements (\texttt{Survey\_Record.csv}), and the reprocessed output files are available from the author. All original OPUS datasheets are archived and can be resubmitted to OPUS for independent verification.
+\noindent\textbf{Data and Code Availability.} All data and code required to reproduce this analysis are publicly available at:
 
-\vspace{0.5cm}
+\begin{center}
+\url{https://github.com/sbthomas/TA-FD-Survey}
+\end{center}
 
-\noindent\textbf{Software.} The survey reduction code was modified to support five reference frames (OPUS, CSRS, AusPos, APPS, ITRF00 weighted average) and recompiled for the current analysis. The XYZ-to-geodetic conversion was independently verified using a Python implementation of the WGS\,84 Bowring method (\texttt{xyz2csv.py}). Source code for all processing tools is maintained in the survey archive.
+\noindent The repository contains the raw GPS RINEX observations for all eight monuments, the NGS OPUS solution report for BR1, the complete total station field measurements (\texttt{Survey\_Record.csv}), the monument coordinate database (\texttt{progs/Survey\_monuments.csv}), the survey reduction source code (\texttt{progs/survey\_processor.c}), the XYZ-to-geodetic conversion script (\texttt{progs/xyz2csv.py}), and this technical note in \LaTeX{} source form. See the repository \texttt{README.md} for build and reproduction instructions.
+
+\vspace{0.3cm}
+
+\noindent\textbf{Reproducing the Results.} To reproduce the corrected telescope positions from this report:
+
+\begin{enumerate}[nosep]
+\item Clone the repository and change to the \texttt{progs/} directory.
+\item Compile the survey processor: \texttt{cc -DSUMMARY -o survey\_summary survey\_processor.c -lm}
+\item Run: \texttt{./survey\_summary} --- the ITRF00 columns in the output correspond to the corrected positions in Tables~\ref{tab:md_mirrors}--\ref{tab:lr_mirrors}.
+\item To verify the XYZ-to-geodetic conversion: \texttt{python3 xyz2csv.py}
+\end{enumerate}
+
+\noindent Alternative compilation flags \texttt{-DDISTANCES} and \texttt{-DFULL} produce the averaged mirror position tables and full per-measurement detail, respectively. The program reads \texttt{Survey\_Record.csv} and \texttt{Survey\_monuments.csv} from the current working directory.
+
+\vspace{0.3cm}
+
+\noindent\textbf{Software.} The survey reduction code (\texttt{survey\_processor.c}) processes raw total station observations through five reference frames (OPUS, CSRS, AusPos, APPS, ITRF00 weighted average) in a single run. It requires only a C compiler and the standard math library. The XYZ-to-geodetic conversion was independently verified using a Python~3 implementation of the WGS\,84 Bowring method (\texttt{xyz2csv.py}), which has no external dependencies.
 }
 
 \end{document}
