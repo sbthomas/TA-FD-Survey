@@ -433,7 +433,7 @@ int set_target(MEASUREMENT *meas)
     {
       meas->target.azimuth -= meas->baseline_azimuth; // Subract the measured baseline azimuth
       meas->target.azimuth += meas->base.azimuth;     // Add the official baseline azimuth
-      if(meas->target.azimuth < 0.0e0)meas->target.azimuth = 360.0e0 - meas->target.azimuth;
+      if(meas->target.azimuth < 0.0e0)meas->target.azimuth += 360.0e0;
     }
 
   // Compute the east, north, up coordinates of the target

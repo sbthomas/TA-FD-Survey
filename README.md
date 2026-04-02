@@ -31,6 +31,8 @@ Matsuzawa (2025) at Middle Drum and Nakazawa (2020) at Black Rock Mesa.
 │   ├── survey_processor.c        Survey reduction code (C)
 │   ├── survey_averager.c         Multi-processor coordinate averager (C)
 │   ├── xyz2csv.py                ECEF XYZ to geodetic converter (Python 3)
+│   ├── Makefile                  Build all output variants
+│   ├── validate.sh               Automated validation (12 checks)
 │   ├── Survey_monuments.csv      Monument coordinates in 5 reference frames
 │   ├── Survey_Record.csv         Total station field measurements
 │   └── ELS.txt                   ELS reference station data
@@ -52,15 +54,15 @@ Matsuzawa (2025) at Middle Drum and Nakazawa (2020) at Black Rock Mesa.
 
 ```bash
 cd progs
+make            # builds all four binaries
+```
 
-# Summary output (one line per measurement per reference frame):
-cc -DSUMMARY -o survey_summary survey_processor.c -lm
+Or compile individually:
 
-# Averaged mirror positions per station (wiki table format):
+```bash
+cc -DSUMMARY   -o survey_summary   survey_processor.c -lm
 cc -DDISTANCES -o survey_distances survey_processor.c -lm
-
-# Full detail (all measurement parameters and computed positions):
-cc -DFULL -o survey_full survey_processor.c -lm
+cc -DFULL      -o survey_full      survey_processor.c -lm
 ```
 
 ### Run
@@ -97,9 +99,20 @@ The processing code runs all five reference frames in sequence:
 should replace the NAD 83 values in the analysis database. The other four
 frames are retained for cross-validation.
 
-### Validation Checks
+### Automated Validation
 
-After building and running, verify:
+```bash
+cd progs
+bash validate.sh
+```
+
+This builds the code, runs it, and verifies 12 checks: XYZ-to-geodetic
+self-consistency, monument heights vs Table 5, measurement counts per
+frame, cross-frame consistency, and CLF1 ITRF00 failure handling.
+
+### Manual Validation Checks
+
+After building and running, you can also verify manually:
 
 1. **Monument heights match Table 5 of the report:**
    The ITRF00 base heights in the FULL output (column 23) should be:

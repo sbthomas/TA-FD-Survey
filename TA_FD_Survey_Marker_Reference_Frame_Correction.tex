@@ -281,7 +281,7 @@ The raw measurements are stored in \texttt{Survey\_Record.csv} (also \texttt{pro
 \end{tabular}
 \end{table}
 
-\noindent \textbf{Important:} The distances in the CSV are recorded in \textbf{feet}, not meters. The processing code uses the slant distance $S$ directly (the instrument's internal EDM reports in feet, but the values in the CSV file are the direct instrument readout). The slant distance $S$ is used as meters in the processing code; inspection of the results confirms that the total station was configured to report in meters despite the CSV header label.
+\noindent \textbf{Important:} The distances in the CSV are recorded in \textbf{feet}. The processing code converts feet to meters on input ($S_{\text{m}} = S_{\text{ft}} \times 12 \times 2.54 / 100$). This conversion is applied to all three distance fields ($S$, $H$, $V$) in the \texttt{read\_measurements()} function.
 
 \subsubsection{Extending to TAx4 or Additional Targets}
 
