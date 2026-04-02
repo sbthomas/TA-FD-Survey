@@ -329,27 +329,50 @@ The NGS OPUS service reports every solution in both frames simultaneously: NAD\,
 
 \subsubsection{Broader Impact: Surface Detector Heights from DEM Comparison}
 
-This reference frame discrepancy is not unique to the FD telescope geometry. A related manifestation has been observed in the surface detector (SD) array, where a systematic offset of approximately 1\,m has been noted between the DEM-derived heights and the GPS-measured heights from the Motorola GPS engines in each SD station.
+The NAD\,83/WGS\,84 reference frame discrepancy documented in this report for the FD markers also affects any comparison between GPS-measured heights and map/DEM-derived heights within the experiment. A concrete example is the surface detector (SD) array, where a large systematic offset has been observed between GPS and USGS NED (National Elevation Dataset) heights.
 
-The SD GPS receivers report WGS\,84 ellipsoidal heights. To compare these with terrain elevation, one must convert to orthometric height (elevation above mean sea level) using a geoid model:
-
-\begin{equation}
-H_{\text{ortho}} = h_{\text{ellipsoidal}} - N_{\text{geoid}}
-\label{eq:geoid}
-\end{equation}
-
-\noindent where $N$ is the geoid undulation ($N \approx -19.9$\,m at the TA site from GEOID12B, meaning the geoid surface is 19.9\,m below the ellipsoid). USGS Digital Elevation Models report orthometric heights referenced to NAVD\,88.
-
-The critical subtlety is that the NGS geoid models (GEOID12B, GEOID18, etc.) are defined as the separation between the \emph{NAD\,83} ellipsoid and the NAVD\,88 geoid---not between the WGS\,84 ellipsoid and the geoid. If WGS\,84 ellipsoidal heights are used as input to a NAD\,83-referenced geoid model without first applying the frame transformation, the resulting orthometric height inherits the $\sim\!0.73$\,m frame offset:
+A comparison of 836 SD stations across the TA, TALE, and TAx4 arrays (from the GPS\,/\,NED analysis by Kido and Okuda) reveals a systematic height discrepancy of:
 
 \begin{equation}
-H_{\text{computed}} = h_{\text{WGS84}} - N_{\text{NAD83}} = (h_{\text{NAD83}} - 0.73) - N_{\text{NAD83}} = H_{\text{true}} - 0.73~\text{m}
+\Delta h = h_{\text{GPS}} - h_{\text{expected}} = +4.53 \pm 0.93~\text{m}~~~(n = 836)
 \label{eq:sd_offset}
 \end{equation}
 
-\noindent The GPS-derived orthometric height is therefore systematically \emph{lower} than the true orthometric height (and thus lower than the DEM value) by approximately 0.73\,m. When combined with other contributions---DEM interpolation error, single-frequency GPS vertical accuracy ($\sim\!2$--3\,m RMS for consumer Motorola engines), and local geoid model uncertainty---this manifests as the observed $\sim\!1$\,m systematic offset between SD GPS heights and DEM heights.
+\noindent where $h_{\text{expected}} = H_{\text{NED}} + N_{\text{geoid}} + h_{\text{antenna}}$ is the GPS ellipsoidal height predicted from the DEM orthometric height, the geoid undulation ($N \approx -19.9$\,m from GEOID12B), and the SD antenna height above ground ($h_{\text{antenna}} = 0.89$\,m). The GPS-measured heights are systematically \emph{higher} than predicted. The offset varies modestly by sub-array:
 
-The resolution is the same as for the FD markers: either convert the GPS heights to NAD\,83 before applying the geoid model, or use an ITRF-referenced geoid. For the SD array, where individual station height accuracy of 1--2\,m is typically sufficient, the 0.73\,m bias may be within the existing error budget. For the FD geometry, where sub-meter accuracy drives the Opt-copter calibration, the correction is essential.
+\begin{table}[H]
+\centering
+\caption{SD GPS-vs-NED height discrepancy by sub-array. $\Delta h = h_{\text{GPS}} - h_{\text{expected}}$. The horizontal (East/North) offsets are negligible ($< 0.01$\,m mean).}
+\label{tab:sd_offsets}
+\smallskip
+\begin{tabular}{@{}lS[table-format=3.0]S[table-format=1.3]S[table-format=1.3]@{}}
+\toprule
+{Array} & {$n$} & {$\overline{\Delta h}$ (m)} & {$\sigma$ (m)} \\
+\midrule
+TA   & 507 & 4.742 & 0.716 \\
+TALE &  79 & 4.564 & 1.427 \\
+TAx4 & 250 & 4.102 & 0.974 \\
+\midrule
+All  & 836 & 4.534 & 0.931 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This offset is much larger than the 0.73\,m NAD\,83/WGS\,84 frame discrepancy and has multiple contributing components:
+
+\begin{enumerate}[nosep]
+\item \textbf{Single-frequency ionospheric bias ($\sim\!3$--4\,m):} The Motorola Oncore GPS receivers in the SD stations are single-frequency (L1-only) receivers. Without dual-frequency measurements, the ionospheric group delay cannot be directly measured and must be estimated from broadcast models (e.g., Klobuchar). The unmodeled residual ionospheric delay maps primarily into a \emph{positive} height bias that varies with solar activity and local ionospheric conditions. This is the dominant component of the observed offset.
+
+\item \textbf{NAD\,83/WGS\,84 frame offset ($\sim\!0.73$\,m):} The NGS geoid models (GEOID09, GEOID12B, GEOID18) define the separation $N$ between the NAD\,83 ellipsoid and the NAVD\,88 geoid. If WGS\,84 ellipsoidal heights are used as input without first transforming to NAD\,83, the resulting orthometric height is systematically low by $\sim\!0.73$\,m, equivalently making $h_{\text{expected}}$ too low and $\Delta h$ too positive. This is the same effect documented for the FD markers.
+
+\item \textbf{DEM resolution and interpolation ($\sim\!0.5$--1\,m):} The NED has a vertical accuracy of approximately 1--2\,m RMS in the Basin and Range terrain of the TA site. Interpolation to individual SD positions introduces additional scatter.
+
+\item \textbf{Multipath and antenna effects ($\sim\!0.5$\,m):} The SD antenna environment (metal enclosure, solar panel) can introduce multipath-induced height biases.
+\end{enumerate}
+
+\noindent The Kido/Okuda analysis fits a spatial model to the $\Delta h$ values to remove the systematic component, yielding residuals with mean $0.018$\,m and standard deviation $0.93$\,m---consistent with the expected precision of single-frequency GPS.
+
+The SD height offset is a \emph{different problem} from the FD marker offset: the FD issue is purely a reference frame mismatch (0.73\,m, correctable by using ITRF coordinates), while the SD issue is dominated by single-frequency GPS limitations ($\sim\!4$\,m, requiring either dual-frequency receivers or empirical modeling to correct). However, the 0.73\,m NAD\,83/WGS\,84 component is embedded within the SD offset and should be accounted for in any precision analysis of SD positions. The SD GPS/NED comparison data are included in the repository (\texttt{TA\_TALE\_TAx4 GPS \& NED.xlsx}).
 
 \subsubsection{Distinguishing Height Types}
 

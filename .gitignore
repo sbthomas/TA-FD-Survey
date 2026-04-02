@@ -35,6 +35,8 @@ progs/last.kumacold
 # Binary spreadsheet/PDF duplicates of CSV data
 *.ods
 *.xls
+# Allow the SD GPS/NED comparison spreadsheet
+!TA_TALE_TAx4 GPS & NED.xlsx
 
 # Directories not needed in repo
 files/
