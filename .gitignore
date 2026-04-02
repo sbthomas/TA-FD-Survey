@@ -37,6 +37,7 @@ progs/last.kumacold
 *.xls
 # Allow the SD GPS/NED comparison spreadsheet
 !TA_TALE_TAx4 GPS & NED.xlsx
+!TA_all_positions_ITRF00.xlsx
 
 # Directories not needed in repo
 files/
