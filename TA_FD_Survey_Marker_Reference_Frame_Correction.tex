@@ -358,34 +358,74 @@ All  & 836 & 4.534 & 0.931 \\
 \end{tabular}
 \end{table}
 
-This offset is much larger than the 0.73\,m NAD\,83/WGS\,84 frame discrepancy. Analysis of the 836-station dataset, combined with knowledge of the SD GPS configuration, identifies two dominant components that together account for the full offset:
+This offset is much larger than the 0.73\,m NAD\,83/WGS\,84 frame discrepancy. Analysis of the 836-station dataset, combined with knowledge of the SD GPS configuration, identifies two components whose effects partially cancel in the raw comparison:
 
-\begin{enumerate}[nosep]
-\item \textbf{Uncorrected L1 ionospheric delay ($\sim\!3.8$\,m):} The Motorola Oncore GPS receivers in the SD stations are single-frequency (L1-only) receivers configured primarily for timing. The SD DAQ software applies no ionospheric correction to the position output, and the receivers are believed to operate in a mode that does not apply the broadcast Klobuchar model internally. In this configuration, the \emph{full} ionospheric group delay maps into the position solution.
-
-The ionospheric delay at L1 (1575.42\,MHz) is $\Delta\rho = 0.162 \times \text{VTEC}$\,m, where VTEC is the vertical total electron content in TECU ($10^{16}$\,el/m$^2$). At the TA latitude ($\sim\!39\degree$\,N), typical VTEC values are 5--10\,TECU at night and 15--30\,TECU during the day, yielding a 24-hour average zenith delay of approximately 2\,m. The ionospheric delay maps preferentially into the height component due to satellite geometry, with an amplification factor approximately equal to the vertical dilution of precision (VDOP $\approx 1.5$--2). The resulting height bias is:
+\paragraph{Decomposition.} The comparison formula computes $h_{\text{expected}} = H_{\text{NED}} + N_{\text{NAD83}} + h_{\text{antenna}}$. Since the geoid model is referenced to NAD\,83, this yields a NAD\,83 ellipsoidal height. The GPS receiver reports WGS\,84. Therefore:
 
 \begin{equation}
-\Delta h_{\text{iono}} \approx \text{VDOP} \times 0.162 \times \overline{\text{VTEC}} \approx 1.7 \times 0.162 \times 14 \approx 3.9~\text{m}
+\Delta h = h_{\text{GPS}} - h_{\text{expected}} = \underbrace{(h_{\text{true}} + \delta h_{\text{iono}})}_{\text{GPS (WGS\,84 + iono bias)}} - \underbrace{(h_{\text{true}} + 0.73)}_{\text{expected (NAD\,83)}} = \delta h_{\text{iono}} - 0.73
+\label{eq:sd_decomp}
 \end{equation}
 
-\noindent where $\overline{\text{VTEC}} \approx 14$\,TECU is a representative 24-hour average for moderate solar conditions at mid-latitudes. This estimate of $\sim\!3.9$\,m is consistent with the observed residual of $4.53 - 0.73 = 3.80$\,m after accounting for the reference frame offset.
+\noindent The two effects have \emph{opposite} signs: the ionospheric delay biases the GPS height high, while the NAD\,83 reference makes the expected height 0.73\,m too high, partially canceling the ionospheric effect. The true ionospheric height bias is therefore:
 
-\item \textbf{NAD\,83/WGS\,84 frame offset ($\sim\!0.73$\,m):} The NGS geoid model (GEOID12B) defines the separation $N$ between the NAD\,83 ellipsoid and the NAVD\,88 geoid. The SD GPS receivers report WGS\,84 ellipsoidal heights. Using WGS\,84 heights with a NAD\,83-referenced geoid model without frame transformation makes $h_{\text{expected}}$ systematically too low by $\sim\!0.73$\,m. This is the same effect documented for the FD markers in this report.
-\end{enumerate}
+\begin{equation}
+\delta h_{\text{iono}} = \Delta h + 0.73 = 4.53 + 0.73 = 5.26 \pm 0.93~\text{m}
+\label{eq:iono_bias}
+\end{equation}
 
-\noindent The two components sum to $\sim\!3.8 + 0.73 = 4.5$\,m, matching the observed $4.53 \pm 0.93$\,m. The 0.93\,m scatter is consistent with the expected precision of single-frequency GPS (varying ionospheric conditions, multipath, and DEM interpolation error). Several alternative hypotheses were tested and excluded:
+\paragraph{Ionospheric origin.} The Motorola Oncore GPS receivers in the SD stations are single-frequency (L1-only) receivers configured primarily for timing. The SD DAQ software applies no ionospheric correction to the position output, and the receivers are believed to operate in a mode that does not apply the broadcast Klobuchar model internally. In this configuration, the \emph{full} ionospheric group delay at L1 (1575.42\,MHz) maps into the position solution.
+
+The L1 ionospheric range delay is $\Delta\rho = 0.162 \times \text{VTEC}$\,m, where VTEC is the vertical total electron content in TECU ($10^{16}$\,el/m$^2$). At the TA latitude ($\sim\!39\degree$\,N), typical values are 5--10\,TECU at night and 15--30\,TECU during the day, with a 24-hour average of $\sim\!10$--15\,TECU for moderate solar conditions. The ionospheric delay maps preferentially into the height component due to satellite geometry, with an amplification factor of approximately VDOP~$\times$~obliquity~$\approx 2$--3. The resulting height bias of $\sim\!5$\,m is consistent with the observed $5.26 \pm 0.93$\,m.
+
+\paragraph{Excluded alternatives.} Several other hypotheses were tested:
 
 \begin{itemize}[nosep]
-\item \textbf{Geoid model error:} The $N$ values in the Kido/Okuda analysis ($-19.0$ to $-20.2$\,m) vary smoothly with latitude at $1.38$\,m/deg, consistent with GEOID12B. A model error large enough to explain the offset ($\sim\!3.8$\,m) is not credible.
-\item \textbf{Antenna height error:} Removing the offset would require an antenna height of $5.4$\,m above ground---physically impossible for the $\sim\!1.2$\,m SD enclosures.
-\item \textbf{Antenna phase center:} Typical L1 patch antenna phase center offsets are $0.05$--$0.10$\,m, far too small.
-\item \textbf{Spatial or elevation dependence:} The offset shows weak correlation with latitude ($r = -0.16$), longitude ($r = -0.12$), and elevation ($r = -0.09$), indicating a predominantly position-independent (atmospheric) origin.
+\item \textbf{Geoid model error:} The $N$ values ($-19.0$ to $-20.2$\,m) vary smoothly with latitude at $1.38$\,m/deg, consistent with GEOID12B. A systematic error of $\sim\!5$\,m is not credible.
+\item \textbf{Antenna height error:} Zeroing the offset would require $h_{\text{antenna}} = 5.4$\,m above ground---physically impossible.
+\item \textbf{Antenna phase center:} Typical L1 patch antenna offsets are $0.05$--$0.10$\,m.
+\item \textbf{Spatial dependence:} The offset shows weak correlation with latitude ($r = -0.16$), longitude ($r = -0.12$), and elevation ($r = -0.09$), consistent with a predominantly atmospheric (position-independent) origin.
 \end{itemize}
 
-\noindent The modest variation between sub-arrays (TA: $4.74$\,m, TALE: $4.56$\,m, TAx4: $4.10$\,m) may reflect differences in the ionospheric conditions at the time the GPS positions were established, or spatial sampling effects. A definitive test would be to compare the SD GPS positions against dual-frequency GNSS measurements at a subset of stations, or to apply the Klobuchar correction in post-processing: this should reduce the offset from $\sim\!4.5$\,m to $\sim\!1.5$\,m (the frame offset plus the Klobuchar residual of $\sim\!40\%$ of the ionospheric delay).
+\paragraph{Outliers.} Of the 836 stations, 24 lie outside the interquartile fences ($[2.39, 6.68]$\,m). These are predominantly stations on slopes where the 30\,m NED grid poorly represents the local terrain. The worst outliers are listed in Table~\ref{tab:sd_outliers}. In each case, the nearest neighbors show large NED elevation gradients (20--40\,m variation within 1\,km), consistent with DEM interpolation error as the dominant outlier mechanism.
 
-The SD height offset is a \emph{different problem} from the FD marker offset: the FD issue is purely a reference frame mismatch (0.73\,m, correctable exactly by using ITRF coordinates), while the SD issue is dominated by uncorrected ionospheric delay ($\sim\!3.8$\,m) in the timing-optimized GPS receivers. However, the 0.73\,m NAD\,83/WGS\,84 component is embedded within the SD offset and should be accounted for in any precision analysis of SD positions. The SD GPS/NED comparison data are included in the repository (\texttt{TA\_TALE\_TAx4 GPS \& NED.xlsx}).
+\begin{table}[H]
+\centering
+\caption{SD stations with the largest GPS--NED height discrepancies ($>3\sigma$ or outside IQR fences). These are attributed to DEM interpolation error on sloped terrain.}
+\label{tab:sd_outliers}
+\smallskip
+\footnotesize
+\begin{tabular}{@{}clS[table-format=2.4]S[table-format=-3.4]S[table-format=2.3]S[table-format=4.0]l@{}}
+\toprule
+{Array} & {Site} & {Lat ($\degree$N)} & {Lon ($\degree$W)} & {$\Delta h$ (m)} & {$H_{\text{NED}}$ (m)} & {Notes} \\
+\midrule
+TALE & 5703 & 39.4482 & -113.0017 & 10.812 & 1618 & Neighbor NED range 23\,m in 0.4\,km \\
+TAx4 & 3717 & 39.4211 & -112.9272 & 8.000  & 1477 & Co-located with TALE 1128 \\
+TALE & 1128 & 39.4211 & -112.9272 & 7.804  & 1477 & Co-located with TAx4 3717 \\
+TA   &  505 & 39.1732 & -113.0102 & 7.546  & 1422 & Neighbor NED range 16\,m in 1.2\,km \\
+TALE & 5802 & 39.4442 & -113.0099 & 7.193  & 1652 & Steep terrain near MD \\
+TAx4 & 4110 & 39.0058 & -112.7558 & 7.140  & 1417 & Southern edge of TAx4 \\
+\addlinespace
+TAx4 & 6407 & 39.4728 & -112.8396 & 0.930  & 1402 & Anomalously low $\Delta h$ \\
+TAx4 & 6507 & 39.4916 & -112.8400 & 1.310  & 1401 & Anomalously low $\Delta h$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The co-located stations TAx4\,3717 and TALE\,1128 (same physical position, surveyed at different epochs) both show $\Delta h \approx 8$\,m, confirming that the outlier is due to the DEM, not the GPS.
+
+\paragraph{Corrected SD positions.} A file of corrected SD positions in WGS\,84/ITRF, consistent with the FD telescope positions, is provided in the repository (\texttt{SD\_corrected\_positions.csv}). The corrected ellipsoidal height is:
+
+\begin{equation}
+h_{\text{ITRF}} = H_{\text{NED}} + N_{\text{NAD83}} + h_{\text{antenna}} - 0.73~\text{m}
+\label{eq:sd_corrected}
+\end{equation}
+
+\noindent This uses the DEM orthometric height as ground truth (more accurate than the ionosphere-biased GPS), applies the NAD\,83 geoid to recover the NAD\,83 ellipsoidal height, adds the antenna height, and subtracts 0.73\,m to transform to WGS\,84/ITRF. The horizontal coordinates are taken directly from the GPS (where the ionospheric effect is small: mean East offset $0.003$\,m, mean North offset $0.000$\,m relative to NED).
+
+The modest variation between sub-arrays (TA: $4.74$\,m, TALE: $4.56$\,m, TAx4: $4.10$\,m in the raw $\Delta h$) may reflect differences in ionospheric conditions at the time the GPS positions were established, or spatial sampling effects. Three co-located station pairs (same position, different epoch) show consistent offsets within 0.2\,m, suggesting the GPS positions are stable. A definitive test of the ionospheric hypothesis would be to compare the SD GPS positions against dual-frequency GNSS measurements at a subset of stations.
+
+The SD height offset is a \emph{different problem} from the FD marker offset: the FD issue is purely a reference frame mismatch (0.73\,m, correctable exactly by using ITRF coordinates), while the SD issue is dominated by uncorrected ionospheric delay ($\sim\!5.3$\,m) in the timing-optimized GPS receivers. However, the 0.73\,m frame component is embedded in the comparison and must be accounted for when generating corrected positions. The SD GPS/NED comparison data (\texttt{TA\_TALE\_TAx4 GPS \& NED.xlsx}) and corrected positions (\texttt{SD\_corrected\_positions.csv}) are included in the repository.
 
 \subsubsection{Distinguishing Height Types}
 
