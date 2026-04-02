@@ -1,0 +1,89 @@
+% a new subsection within the Background section)
+%======================================================================
+
+\subsection{GPS Ionospheric Delay Theory}
+\label{sec:iono_theory}
+
+The ionospheric height bias observed in the SD GPS positions (Section~\ref{sec:frame_problem}) is a well-understood consequence of operating single-frequency GPS receivers without an ionospheric correction model. This subsection provides the theoretical background.
+
+\subsubsection{The Ionosphere as a Dispersive Medium}
+
+The ionosphere is the region of Earth's upper atmosphere (approximately 60--1000\,km altitude) where solar ultraviolet radiation ionizes a sufficient fraction of the neutral gas to affect radio wave propagation. For a radio signal at frequency $f$ traversing the ionosphere, the refractive index for the group velocity (which governs code/pseudorange measurements) and the phase velocity (which governs carrier-phase measurements) differ from unity by opposite signs~\cite{misra2006,hofmann2008}:
+\begin{align}
+n_{\text{group}} &\approx 1 + \frac{40.3\,n_e}{f^2}, \label{eq:n_group}\\[4pt]
+n_{\text{phase}} &\approx 1 - \frac{40.3\,n_e}{f^2}, \label{eq:n_phase}
+\end{align}
+where $n_e$ is the local electron density in electrons/m$^3$ and $f$ is in Hz. The group velocity is \emph{slowed} (the code pseudorange is too long), while the phase velocity is \emph{advanced} (the carrier phase appears too short). Both effects have the same magnitude.
+
+Integrating the excess path length along the signal trajectory from satellite to receiver, the ionospheric group delay at frequency $f$ is:
+\begin{equation}
+\Delta I = \frac{40.3}{f^2}\int n_e\,ds = \frac{40.3}{f^2}\,\text{STEC},
+\label{eq:iono_delay}
+\end{equation}
+where $\text{STEC} = \int n_e\,ds$ is the slant total electron content along the line of sight, in units of electrons/m$^2$. One TEC Unit (TECU) equals $10^{16}$\,el/m$^2$.
+
+For a signal from a satellite at zenith angle $z'$ at the ionospheric pierce point (where the line of sight intersects a thin-shell model of the ionosphere at altitude $h_{\text{ion}} \approx 350$\,km), the STEC is related to the vertical TEC (VTEC) by:
+\begin{equation}
+\text{STEC} = \frac{\text{VTEC}}{\cos z'}.
+\label{eq:stec_vtec}
+\end{equation}
+Combining Eqs.~\eqref{eq:iono_delay} and~\eqref{eq:stec_vtec}, the L1 group delay (at $f_{L1} = 1575.42$\,MHz) is:
+\begin{equation}
+\Delta I_{L1} = \frac{40.3}{(1575.42 \times 10^6)^2}\,\frac{\text{VTEC}}{\cos z'} \approx \frac{0.162\,\text{VTEC}}{\cos z'}~\text{m},
+\label{eq:iono_L1}
+\end{equation}
+where VTEC is in TECU and $\Delta I_{L1}$ is in meters. For a satellite at zenith ($z' = 0$) and VTEC $= 15$\,TECU, the delay is $\sim\!2.4$\,m; at $z' = 70\degree$ (satellite at $20\degree$ elevation), it increases to $\sim\!7.1$\,m.
+
+\subsubsection{Mapping Ionospheric Delay to Height Bias}
+\label{sec:iono_height}
+
+The ionospheric group delay adds a positive range error to every satellite pseudorange: the receiver measures a distance to each satellite that is too long. In the least-squares position solution, this common-mode positive range bias maps \emph{preferentially} into the height (vertical) coordinate, for three related reasons~\cite{coster2008,ovstedal2002}:
+
+\begin{enumerate}[nosep]
+\item \textbf{Asymmetric satellite geometry.} GPS satellites are observed only from above (all at positive elevation angles). A symmetric constellation would place some satellites below the horizon, allowing the range bias to cancel. The one-sided geometry means that a positive range bias on all satellites pushes the computed receiver position upward---away from the center of the satellite distribution.
+
+\item \textbf{Elevation-dependent delay.} Low-elevation satellites have longer paths through the ionosphere ($1/\cos z'$ factor in Eq.~\ref{eq:iono_L1}), so they suffer larger delays. The position estimator interprets this as a height-dependent range pattern: the low satellites appear farther away than they should, and the least-squares fit accommodates this by moving the receiver upward.
+
+\item \textbf{Vertical dilution of precision (VDOP).} The GPS constellation provides poorer geometric strength in the vertical than in the horizontal, because no satellites are observed below the horizon. The VDOP is typically 1.5--2.5 (compared to HDOP $\approx$ 0.8--1.5), so range errors are amplified more strongly in the vertical coordinate than in the horizontal.
+\end{enumerate}
+
+The combined effect is that the ionospheric height bias is always positive (the receiver appears too high) and is approximately:
+\begin{equation}
+\delta h_{\text{iono}} \approx \alpha \times 0.162\,\overline{\text{VTEC}}~\text{m},
+\label{eq:iono_height_bias}
+\end{equation}
+where $\alpha \approx 2$--3 is a geometry-dependent amplification factor that accounts for VDOP and the average obliquity of the observed satellites, and $\overline{\text{VTEC}}$ is the effective time-averaged VTEC during the observation period. For $\overline{\text{VTEC}} = 12$\,TECU and $\alpha = 2.5$, this gives $\delta h_{\text{iono}} \approx 4.9$\,m, consistent with the $5.26 \pm 0.93$\,m inferred from the SD data (Eq.~\ref{eq:iono_bias}).
+
+\subsubsection{The Klobuchar Broadcast Model}
+
+The GPS navigation message includes eight ionospheric correction parameters that define the Klobuchar model~\cite{klobuchar1987}. This model approximates the VTEC as a cosine function of local time with a nighttime floor:
+\begin{equation}
+\Delta I_{\text{Klobuchar}} = F \times
+\begin{cases}
+5 \times 10^{-9}~\text{s} \times c, & \text{night}, \\[4pt]
+\left[5 \times 10^{-9} + A\,\cos\!\left(\dfrac{2\pi(t - 50{,}400)}{P}\right)\right]\!\times c, & \text{day},
+\end{cases}
+\label{eq:klobuchar}
+\end{equation}
+where $F$ is the obliquity factor ($\approx 1/\cos z'$), $A$ is the amplitude (from the broadcast parameters, typically 5--50\,ns), $P$ is the period (from the broadcast parameters, typically 72{,}000\,s), $t$ is local time in seconds, and $c$ is the speed of light. The ionosphere is modeled as a thin shell at 350\,km altitude.
+
+The Klobuchar model removes approximately 50\% of the ionospheric delay on an RMS basis~\cite{klobuchar1987}. This is adequate for navigation but leaves a residual bias of several meters that is unacceptable for precise positioning. Critically, if the receiver firmware does not apply even this partial correction---as is believed to be the case for the SD Motorola Oncore receivers---the \emph{full} ionospheric delay biases the position solution.
+
+\subsubsection{Typical TEC Values at the TA Site}
+
+The Telescope Array is located at mid-latitude ($\sim\!39\degree$\,N), a region of moderate ionospheric activity~\cite{mannucci1998}. The VTEC at the TA site follows the expected diurnal and solar-cycle patterns:
+
+\begin{itemize}[nosep]
+\item \textbf{Diurnal variation:} VTEC ranges from 5--10\,TECU at night (local midnight through pre-dawn) to 15--30\,TECU during the day (local noon $\pm$ 3\,hours). The peak occurs 1--2 hours after local noon due to the time required for solar heating to maximize the ionization rate.
+
+\item \textbf{Solar cycle variation:} VTEC scales roughly with the solar extreme ultraviolet (EUV) flux, which varies by a factor of 2--3 between solar minimum and solar maximum. The 2011 survey was conducted during solar cycle 24 ascending phase (moderate activity); the SD GPS positions were established over a range of solar conditions spanning 2007--2019.
+
+\item \textbf{Seasonal variation:} At mid-latitudes, VTEC tends to be higher near the equinoxes than the solstices, with amplitude variations of $\sim\!30$\%.
+
+\item \textbf{Geomagnetic storms:} During major storms, VTEC can increase by a factor of 2--3 for hours to days. These events are infrequent ($\sim\!4$--5 major storms per solar cycle) and would produce anomalously large GPS height biases. The $0.93$\,m scatter in the SD $\Delta h$ values may partly reflect storm-time variability.
+\end{itemize}
+
+For an ``average'' observation at the TA site, a VTEC of 10--15\,TECU is representative, producing an uncorrected L1 range delay of 1.6--2.4\,m at zenith and a height bias of $\sim\!4$--7\,m after geometric amplification. This range brackets the observed $5.26 \pm 0.93$\,m.
+
+
+%======================================================================

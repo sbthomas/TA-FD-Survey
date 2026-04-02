@@ -1,0 +1,386 @@
+%%   4. \begin{thebibliography} -- insert before \end{document}.
+
+
+%======================================================================
+% SECTION: Geodetic Theory and Coordinate Systems
+%======================================================================
+
+\subsection{Geodetic Theory and Coordinate Systems}
+\label{sec:geodetic_theory}
+
+The following subsections provide the theoretical foundations for the coordinate transformations used throughout this analysis. The goal is to make the paper self-contained for a physicist who may not be familiar with the conventions and subtleties of geodetic reference frames.
+
+\subsubsection{The WGS\,84 Ellipsoid}
+\label{sec:wgs84}
+
+The World Geodetic System 1984 (WGS\,84) defines a geocentric reference ellipsoid---an oblate spheroid of revolution---as the fundamental surface for GPS positioning~\cite{nga2014}. The defining parameters are the semi-major axis $a$ and the flattening $f$:
+\begin{align}
+a &= 6\,378\,137.0~\text{m}, \label{eq:wgs84_a}\\
+f &= \frac{1}{298.257223563}. \label{eq:wgs84_f}
+\end{align}
+From these, the semi-minor axis $b = a(1-f) = 6\,356\,752.314~\text{m}$ and the first eccentricity squared $e^2 = 2f - f^2 = 0.00669437999014$ follow immediately.
+
+A point near Earth's surface is described in geodetic coordinates $(\varphi, \lambda, h)$, where $\varphi$ is the geodetic latitude (the angle between the ellipsoid normal and the equatorial plane), $\lambda$ is the longitude (measured east from the Greenwich meridian), and $h$ is the ellipsoidal height (the distance above the ellipsoid along its outward normal). The ellipsoidal height is \emph{not} the elevation above mean sea level; the distinction is addressed in Section~\ref{sec:geoid}.
+
+\paragraph{Geodetic to ECEF Cartesian.} The transformation from geodetic coordinates $(\varphi, \lambda, h)$ to geocentric Earth-centered Earth-fixed (ECEF) Cartesian coordinates $(X, Y, Z)$ is~\cite{nga2014}:
+\begin{align}
+X &= (N + h)\cos\varphi\cos\lambda, \label{eq:geod2xyz_X}\\
+Y &= (N + h)\cos\varphi\sin\lambda, \label{eq:geod2xyz_Y}\\
+Z &= \bigl[N(1 - e^2) + h\bigr]\sin\varphi, \label{eq:geod2xyz_Z}
+\end{align}
+where $N$ is the radius of curvature in the prime vertical:
+\begin{equation}
+N(\varphi) = \frac{a}{\sqrt{1 - e^2 \sin^2\!\varphi}}.
+\label{eq:radius_N}
+\end{equation}
+At the TA site ($\varphi \approx 39.3\degree$), $N \approx 6{,}381{,}040$\,m.
+
+\paragraph{ECEF Cartesian to geodetic.} The inverse transformation---given $(X, Y, Z)$, find $(\varphi, \lambda, h)$---has an exact solution for $\lambda$:
+\begin{equation}
+\lambda = \arctan\!\left(\frac{Y}{X}\right),
+\label{eq:xyz2geod_lam}
+\end{equation}
+but $\varphi$ and $h$ are coupled through Eq.~\eqref{eq:radius_N} and must be solved iteratively. Bowring's method~\cite{bowring1976} provides rapid convergence, typically reaching sub-millimeter accuracy in a single iteration. The algorithm proceeds as follows. Define $p = \sqrt{X^2 + Y^2}$. Compute an initial estimate of the reduced latitude:
+\begin{equation}
+\beta_0 = \arctan\!\left(\frac{Z}{p\,(1 - e^2)}\right).
+\label{eq:bowring_beta0}
+\end{equation}
+Then iterate (usually once):
+\begin{align}
+\varphi &= \arctan\!\left(\frac{Z + e'^2\,b\,\sin^3\!\beta}{p - e^2\,a\,\cos^3\!\beta}\right), \label{eq:bowring_phi}\\
+\beta &= \arctan\!\left(\frac{(1-f)\sin\varphi}{\cos\varphi}\right), \label{eq:bowring_beta}
+\end{align}
+where $e'^2 = e^2/(1-e^2)$ is the second eccentricity squared. After convergence, the ellipsoidal height is:
+\begin{equation}
+h = \frac{p}{\cos\varphi} - N(\varphi).
+\label{eq:bowring_h}
+\end{equation}
+This is the method used in the survey processing code (\texttt{survey\_processor.c}) and independently verified via the Python script \texttt{xyz2csv.py}. The self-consistency check in Table~\ref{tab:xyz_validation} confirms agreement to within 3\,mm.
+
+\subsubsection{The Geoid and Orthometric Height}
+\label{sec:geoid}
+
+The \emph{geoid} is the equipotential surface of Earth's gravity field that best approximates mean sea level in the open ocean~\cite{torge2012}. Because the mass distribution inside the Earth is not uniform, the geoid is an irregular surface that undulates above and below the reference ellipsoid by up to $\pm 100$\,m globally. The geoid undulation $\mathcal{N}$ (we use calligraphic $\mathcal{N}$ to distinguish it from the radius of curvature $N$) at a point is the signed distance from the ellipsoid to the geoid along the ellipsoid normal.
+
+The fundamental height relationship is:
+\begin{equation}
+h = H + \mathcal{N},
+\label{eq:height_relation}
+\end{equation}
+where $h$ is the ellipsoidal height (from GPS), $H$ is the orthometric height (physical elevation above the geoid, i.e., above ``sea level''), and $\mathcal{N}$ is the geoid undulation. Rearranging: $H = h - \mathcal{N}$.
+
+In the United States, orthometric heights are referenced to the North American Vertical Datum of 1988 (NAVD\,88), and the geoid model GEOID12B (or its successors) provides the undulation $\mathcal{N}$ on a grid~\cite{roman2012}. At the Telescope Array site, $\mathcal{N} \approx -19.9$\,m. The negative sign means the geoid lies \emph{below} the WGS\,84 ellipsoid at this location, so that orthometric heights (elevations) are approximately 19.9\,m higher than ellipsoidal heights. For the BR1 monument, as an example: $h_{\text{WGS84}} = 1395.053$\,m, $\mathcal{N} \approx -19.9$\,m, and $H_{\text{ortho}} \approx 1395.053 - (-19.9) = 1415.0$\,m, consistent with the OPUS-reported NAVD\,88 orthometric height of 1415.778\,m (the small residual reflects the geoid model precision).
+
+It is critical to distinguish the geoid undulation from the NAD\,83/ITRF height difference. The $\sim\!0.73$\,m offset documented in this paper is a difference between two ellipsoidal heights in two different geodetic datums; it has nothing to do with the $\sim\!19.9$\,m geoid undulation, which converts between ellipsoidal and orthometric height within a single datum.
+
+\subsubsection{Deflection of the Vertical}
+\label{sec:deflection}
+
+At any point on the Earth's surface, the direction of the local gravity vector (the plumb line) generally does not coincide with the normal to the reference ellipsoid. The angular difference is called the \emph{deflection of the vertical}~\cite{torge2012}. It is decomposed into two components:
+\begin{itemize}[nosep]
+\item $\xi$ (xi): the north--south component, defined as positive when the gravity vector is deflected toward the north relative to the ellipsoid normal.
+\item $\eta$ (eta): the east--west component, defined as positive when the gravity vector is deflected toward the east.
+\end{itemize}
+Typical magnitudes are a few arcseconds (1\,arcsec $\approx$ 4.85\,$\mu$rad $\approx$ 31\,mm/km). At the TA sites, the deflection parameters range from $-4.3''$ to $+1.8''$ (Table~\ref{tab:deflection}).
+
+\paragraph{Why this matters for total station observations.} A total station instrument levels itself using a compensator that aligns to the local gravity vector---the plumb line. All angles measured by the instrument (azimuths and elevations) are therefore referenced to the \emph{astronomic} (gravity-aligned) local frame, not the \emph{geodetic} (ellipsoid-normal) frame. The difference between these two frames is precisely the deflection of the vertical. If uncorrected, the deflection introduces systematic errors in the computed target positions that grow linearly with distance: at a range of 100\,m, a 4\,arcsec deflection produces a lateral error of approximately 2\,mm, and at 700\,m (the MD1--MD2 baseline), approximately 14\,mm.
+
+\paragraph{The deflection rotation.} To convert observations from the astronomic local frame to the geodetic local frame, a small rotation is applied. Let $(\delta E_a, \delta N_a, \delta U_a)$ be the East--North--Up offsets in the astronomic frame (as measured by the total station). The geodetic offsets $(\delta E_g, \delta N_g, \delta U_g)$ are obtained by applying the deflection-of-vertical rotation~\cite{torge2012}:
+\begin{equation}
+\begin{pmatrix} \delta E_g \\ \delta N_g \\ \delta U_g \end{pmatrix}
+=
+\begin{pmatrix}
+1 & 0 & \eta \\
+0 & 1 & -\xi \\
+-\eta & \xi & 1
+\end{pmatrix}
+\begin{pmatrix} \delta E_a \\ \delta N_a \\ \delta U_a \end{pmatrix},
+\label{eq:deflection_rotation}
+\end{equation}
+where $\xi$ and $\eta$ are in radians. This is a first-order (small-angle) rotation; the full rotation matrix differs only at second order in $(\xi, \eta)$, which is negligible for arcsecond-level deflections. The correction is applied in the survey processing code (Section~\ref{sec:survey_math}) after converting each total station observation to local ENU offsets and before transforming to ECEF.
+
+\subsubsection{The NAD\,83 to ITRF Transformation}
+\label{sec:helmert}
+
+The transformation between the NAD\,83 and ITRF reference frames is a 14-parameter Helmert (similarity) transformation maintained by NGS~\cite{soler2004}. The general form, for a position vector $\mathbf{X}$ at epoch $t$ relative to a reference epoch $t_0$, is:
+\begin{equation}
+\mathbf{X}_{\text{ITRF}}(t) = \mathbf{X}_{\text{NAD83}} + \mathbf{T}(t_0) + \delta s(t_0)\,\mathbf{X}_{\text{NAD83}} + \mathbf{R}(t_0)\,\mathbf{X}_{\text{NAD83}} + \dot{\mathbf{T}}\,(t - t_0) + \delta\dot{s}\,(t - t_0)\,\mathbf{X}_{\text{NAD83}} + \dot{\mathbf{R}}\,(t - t_0)\,\mathbf{X}_{\text{NAD83}},
+\label{eq:helmert}
+\end{equation}
+where:
+\begin{itemize}[nosep]
+\item $\mathbf{T} = (T_x, T_y, T_z)^{\!\top}$ is the translation vector (three parameters),
+\item $\delta s$ is a differential scale factor (one parameter),
+\item $\mathbf{R}$ is an antisymmetric rotation matrix encoding three small rotation angles $(\omega_x, \omega_y, \omega_z)$,
+\item $\dot{\mathbf{T}}$, $\delta\dot{s}$, $\dot{\mathbf{R}}$ are the time derivatives of the above (seven rate parameters).
+\end{itemize}
+The 14 parameters ($\mathbf{T}$, $\delta s$, $\mathbf{R}$ and their rates) are published by NGS for each ITRF realization. For ITRF2000 relative to NAD\,83(CORS96), the translations are of order 1\,m, the rotations are of order 1\,mas (milliarcsecond), and the scale difference is of order $10^{-9}$.
+
+At the Telescope Array site, the net effect of this transformation on the height coordinate reduces to the $\sim\!0.73$\,m offset documented in Eq.~\eqref{eq:frame_offset}. The horizontal offsets are a few centimeters. The precise value varies weakly with latitude (a few mm over the $\sim\!35$\,km north--south extent of the FD triangle), which accounts for the marker-to-marker variation in $\Delta h$ seen in Table~\ref{tab:height_corrections}.
+
+\subsubsection{OPUS Static Positioning}
+\label{sec:opus}
+
+The Online Positioning User Service (OPUS) is a free service operated by the U.S.\ National Geodetic Survey (NGS)~\cite{soler2003}. The user submits a RINEX file containing dual-frequency GPS observations from a static occupation, and OPUS returns precise coordinates in both NAD\,83 and ITRF.
+
+The processing strategy is carrier-phase double-differencing. OPUS selects three nearby Continuously Operating Reference Stations (CORS) and forms double-differenced observations, which cancel satellite and receiver clock errors and greatly reduce atmospheric effects. The key processing steps are:
+\begin{enumerate}[nosep]
+\item \textbf{CORS selection:} Three reference stations are selected based on proximity, data quality, and geometric strength (low PDOP). Baselines to the user station are typically 50--300\,km.
+\item \textbf{Double-differencing:} For each epoch, the carrier-phase observable is differenced between satellites (eliminating receiver clock) and between stations (eliminating satellite clock). The resulting double-differenced observable is sensitive only to the baseline geometry, integer ambiguities, and residual atmospheric delays.
+\item \textbf{Ambiguity resolution:} The carrier-phase observations are ambiguous by an integer number of wavelengths ($\lambda_{L1} = 19.0$\,cm, $\lambda_{L2} = 24.4$\,cm). OPUS resolves these integer ambiguities using a combination of wide-lane and narrow-lane techniques. The percentage of resolved ambiguities is reported as a quality metric; values below 80\% indicate a degraded solution.
+\item \textbf{Position estimation:} With ambiguities fixed, the baseline vector to each CORS is determined by least-squares adjustment. The user position is the average of the three independently determined baseline solutions.
+\item \textbf{Coordinate output:} The final position is reported in ITRF at the mean epoch of observation, and in NAD\,83(CORS96)(Epoch:2002.0000) after applying the Helmert transformation of Section~\ref{sec:helmert}.
+\end{enumerate}
+For a 6-hour or longer static occupation with a survey-grade antenna, OPUS typically achieves horizontal precision of 1--2\,cm and vertical precision of 2--5\,cm (95\% confidence) per session. The inverse-variance weighted averages of multiple sessions used in this work (Table~\ref{tab:height_corrections}) reduce the vertical uncertainty to 4--20\,mm.
+
+
+%======================================================================
+% SECTION: GPS Ionospheric Delay Theory
+% a new subsection within the Background section)
+%======================================================================
+
+\subsection{GPS Ionospheric Delay Theory}
+\label{sec:iono_theory}
+
+The ionospheric height bias observed in the SD GPS positions (Section~\ref{sec:frame_problem}) is a well-understood consequence of operating single-frequency GPS receivers without an ionospheric correction model. This subsection provides the theoretical background.
+
+\subsubsection{The Ionosphere as a Dispersive Medium}
+
+The ionosphere is the region of Earth's upper atmosphere (approximately 60--1000\,km altitude) where solar ultraviolet radiation ionizes a sufficient fraction of the neutral gas to affect radio wave propagation. For a radio signal at frequency $f$ traversing the ionosphere, the refractive index for the group velocity (which governs code/pseudorange measurements) and the phase velocity (which governs carrier-phase measurements) differ from unity by opposite signs~\cite{misra2006,hofmann2008}:
+\begin{align}
+n_{\text{group}} &\approx 1 + \frac{40.3\,n_e}{f^2}, \label{eq:n_group}\\[4pt]
+n_{\text{phase}} &\approx 1 - \frac{40.3\,n_e}{f^2}, \label{eq:n_phase}
+\end{align}
+where $n_e$ is the local electron density in electrons/m$^3$ and $f$ is in Hz. The group velocity is \emph{slowed} (the code pseudorange is too long), while the phase velocity is \emph{advanced} (the carrier phase appears too short). Both effects have the same magnitude.
+
+Integrating the excess path length along the signal trajectory from satellite to receiver, the ionospheric group delay at frequency $f$ is:
+\begin{equation}
+\Delta I = \frac{40.3}{f^2}\int n_e\,ds = \frac{40.3}{f^2}\,\text{STEC},
+\label{eq:iono_delay}
+\end{equation}
+where $\text{STEC} = \int n_e\,ds$ is the slant total electron content along the line of sight, in units of electrons/m$^2$. One TEC Unit (TECU) equals $10^{16}$\,el/m$^2$.
+
+For a signal from a satellite at zenith angle $z'$ at the ionospheric pierce point (where the line of sight intersects a thin-shell model of the ionosphere at altitude $h_{\text{ion}} \approx 350$\,km), the STEC is related to the vertical TEC (VTEC) by:
+\begin{equation}
+\text{STEC} = \frac{\text{VTEC}}{\cos z'}.
+\label{eq:stec_vtec}
+\end{equation}
+Combining Eqs.~\eqref{eq:iono_delay} and~\eqref{eq:stec_vtec}, the L1 group delay (at $f_{L1} = 1575.42$\,MHz) is:
+\begin{equation}
+\Delta I_{L1} = \frac{40.3}{(1575.42 \times 10^6)^2}\,\frac{\text{VTEC}}{\cos z'} \approx \frac{0.162\,\text{VTEC}}{\cos z'}~\text{m},
+\label{eq:iono_L1}
+\end{equation}
+where VTEC is in TECU and $\Delta I_{L1}$ is in meters. For a satellite at zenith ($z' = 0$) and VTEC $= 15$\,TECU, the delay is $\sim\!2.4$\,m; at $z' = 70\degree$ (satellite at $20\degree$ elevation), it increases to $\sim\!7.1$\,m.
+
+\subsubsection{Mapping Ionospheric Delay to Height Bias}
+\label{sec:iono_height}
+
+The ionospheric group delay adds a positive range error to every satellite pseudorange: the receiver measures a distance to each satellite that is too long. In the least-squares position solution, this common-mode positive range bias maps \emph{preferentially} into the height (vertical) coordinate, for three related reasons~\cite{coster2008,ovstedal2002}:
+
+\begin{enumerate}[nosep]
+\item \textbf{Asymmetric satellite geometry.} GPS satellites are observed only from above (all at positive elevation angles). A symmetric constellation would place some satellites below the horizon, allowing the range bias to cancel. The one-sided geometry means that a positive range bias on all satellites pushes the computed receiver position upward---away from the center of the satellite distribution.
+
+\item \textbf{Elevation-dependent delay.} Low-elevation satellites have longer paths through the ionosphere ($1/\cos z'$ factor in Eq.~\ref{eq:iono_L1}), so they suffer larger delays. The position estimator interprets this as a height-dependent range pattern: the low satellites appear farther away than they should, and the least-squares fit accommodates this by moving the receiver upward.
+
+\item \textbf{Vertical dilution of precision (VDOP).} The GPS constellation provides poorer geometric strength in the vertical than in the horizontal, because no satellites are observed below the horizon. The VDOP is typically 1.5--2.5 (compared to HDOP $\approx$ 0.8--1.5), so range errors are amplified more strongly in the vertical coordinate than in the horizontal.
+\end{enumerate}
+
+The combined effect is that the ionospheric height bias is always positive (the receiver appears too high) and is approximately:
+\begin{equation}
+\delta h_{\text{iono}} \approx \alpha \times 0.162\,\overline{\text{VTEC}}~\text{m},
+\label{eq:iono_height_bias}
+\end{equation}
+where $\alpha \approx 2$--3 is a geometry-dependent amplification factor that accounts for VDOP and the average obliquity of the observed satellites, and $\overline{\text{VTEC}}$ is the effective time-averaged VTEC during the observation period. For $\overline{\text{VTEC}} = 12$\,TECU and $\alpha = 2.5$, this gives $\delta h_{\text{iono}} \approx 4.9$\,m, consistent with the $5.26 \pm 0.93$\,m inferred from the SD data (Eq.~\ref{eq:iono_bias}).
+
+\subsubsection{The Klobuchar Broadcast Model}
+
+The GPS navigation message includes eight ionospheric correction parameters that define the Klobuchar model~\cite{klobuchar1987}. This model approximates the VTEC as a cosine function of local time with a nighttime floor:
+\begin{equation}
+\Delta I_{\text{Klobuchar}} = F \times
+\begin{cases}
+5 \times 10^{-9}~\text{s} \times c, & \text{night}, \\[4pt]
+\left[5 \times 10^{-9} + A\,\cos\!\left(\dfrac{2\pi(t - 50{,}400)}{P}\right)\right]\!\times c, & \text{day},
+\end{cases}
+\label{eq:klobuchar}
+\end{equation}
+where $F$ is the obliquity factor ($\approx 1/\cos z'$), $A$ is the amplitude (from the broadcast parameters, typically 5--50\,ns), $P$ is the period (from the broadcast parameters, typically 72{,}000\,s), $t$ is local time in seconds, and $c$ is the speed of light. The ionosphere is modeled as a thin shell at 350\,km altitude.
+
+The Klobuchar model removes approximately 50\% of the ionospheric delay on an RMS basis~\cite{klobuchar1987}. This is adequate for navigation but leaves a residual bias of several meters that is unacceptable for precise positioning. Critically, if the receiver firmware does not apply even this partial correction---as is believed to be the case for the SD Motorola Oncore receivers---the \emph{full} ionospheric delay biases the position solution.
+
+\subsubsection{Typical TEC Values at the TA Site}
+
+The Telescope Array is located at mid-latitude ($\sim\!39\degree$\,N), a region of moderate ionospheric activity~\cite{mannucci1998}. The VTEC at the TA site follows the expected diurnal and solar-cycle patterns:
+
+\begin{itemize}[nosep]
+\item \textbf{Diurnal variation:} VTEC ranges from 5--10\,TECU at night (local midnight through pre-dawn) to 15--30\,TECU during the day (local noon $\pm$ 3\,hours). The peak occurs 1--2 hours after local noon due to the time required for solar heating to maximize the ionization rate.
+
+\item \textbf{Solar cycle variation:} VTEC scales roughly with the solar extreme ultraviolet (EUV) flux, which varies by a factor of 2--3 between solar minimum and solar maximum. The 2011 survey was conducted during solar cycle 24 ascending phase (moderate activity); the SD GPS positions were established over a range of solar conditions spanning 2007--2019.
+
+\item \textbf{Seasonal variation:} At mid-latitudes, VTEC tends to be higher near the equinoxes than the solstices, with amplitude variations of $\sim\!30$\%.
+
+\item \textbf{Geomagnetic storms:} During major storms, VTEC can increase by a factor of 2--3 for hours to days. These events are infrequent ($\sim\!4$--5 major storms per solar cycle) and would produce anomalously large GPS height biases. The $0.93$\,m scatter in the SD $\Delta h$ values may partly reflect storm-time variability.
+\end{itemize}
+
+For an ``average'' observation at the TA site, a VTEC of 10--15\,TECU is representative, producing an uncorrected L1 range delay of 1.6--2.4\,m at zenith and a height bias of $\sim\!4$--7\,m after geometric amplification. This range brackets the observed $5.26 \pm 0.93$\,m.
+
+
+%======================================================================
+% SECTION: Survey Reduction Mathematics
+%======================================================================
+
+\subsection{Survey Reduction Mathematics}
+\label{sec:survey_math}
+
+This subsection details the mathematical transformations applied by the survey processing code to convert raw total station observations into geodetic coordinates. The procedure consists of three stages: (1)~conversion from polar observations to local ENU offsets, (2)~rotation from the local astronomic frame to ECEF, and (3)~conversion from ECEF back to geodetic coordinates.
+
+\subsubsection{From Observations to Local ENU}
+
+The total station measures the azimuth $A$ (from the calibrated north reference, Eq.~\ref{eq:azimuth_cal}), the elevation angle $e$ above the local horizontal, and the slant distance $S$ to each target. The corresponding offsets in the local East--North--Up frame are:
+\begin{align}
+\delta E &= S\,\cos e\,\sin A, \label{eq:obs2enu_E}\\
+\delta N &= S\,\cos e\,\cos A, \label{eq:obs2enu_N}\\
+\delta U &= S\,\sin e + h_{\text{inst}} - h_{\text{tgt}}, \label{eq:obs2enu_U}
+\end{align}
+where $h_{\text{inst}}$ is the instrument (trunnion axis) height above the base monument mark and $h_{\text{tgt}}$ is the reflector height above the target surface (zero for targets placed at the mirror surface; $\pm 0.18$\,m for the offset measurements described in Section~\ref{sec:total_station}). The slant distance $S$ has already been corrected for the 30\,mm reflector offset (for standard prism reflectors) and converted from feet to meters.
+
+These offsets are relative to the base monument and are expressed in the \emph{astronomic} (gravity-aligned) local frame, because the total station's compensator aligns to the plumb line.
+
+\subsubsection{From Local ENU to ECEF (with Deflection of the Vertical)}
+
+Converting the local ENU offsets to the geocentric ECEF frame proceeds in two steps.
+
+\paragraph{Step 1: Astronomic to geodetic ENU.} The deflection-of-vertical rotation (Eq.~\ref{eq:deflection_rotation}) is applied to convert from the astronomic ENU frame (in which the instrument operates) to the geodetic ENU frame (aligned with the ellipsoid normal):
+\begin{equation}
+\begin{pmatrix} \delta E_g \\ \delta N_g \\ \delta U_g \end{pmatrix}
+=
+\begin{pmatrix}
+1 & 0 & \eta \\
+0 & 1 & -\xi \\
+-\eta & \xi & 1
+\end{pmatrix}
+\begin{pmatrix} \delta E \\ \delta N \\ \delta U \end{pmatrix},
+\label{eq:astro_to_geod}
+\end{equation}
+where $\xi$ and $\eta$ are the deflection parameters from Table~\ref{tab:deflection}, converted to radians.
+
+\paragraph{Step 2: Geodetic ENU to ECEF.} The standard rotation from the geodetic local ENU frame to ECEF uses the geodetic latitude $\varphi$ and longitude $\lambda$ of the base monument:
+\begin{align}
+\Delta X &= -\sin\lambda\;\delta E_g - \sin\varphi\cos\lambda\;\delta N_g + \cos\varphi\cos\lambda\;\delta U_g, \label{eq:enu2ecef_X}\\
+\Delta Y &= +\cos\lambda\;\delta E_g - \sin\varphi\sin\lambda\;\delta N_g + \cos\varphi\sin\lambda\;\delta U_g, \label{eq:enu2ecef_Y}\\
+\Delta Z &= \phantom{+\cos\lambda\;\delta E_g} + \cos\varphi\;\delta N_g + \sin\varphi\;\delta U_g. \label{eq:enu2ecef_Z}
+\end{align}
+In matrix form, defining $\mathbf{R}_{\text{ENU}}$ as the rotation matrix with rows given by the coefficients above:
+\begin{equation}
+\begin{pmatrix} \Delta X \\ \Delta Y \\ \Delta Z \end{pmatrix}
+=
+\begin{pmatrix}
+-\sin\lambda & -\sin\varphi\cos\lambda & \cos\varphi\cos\lambda \\
++\cos\lambda & -\sin\varphi\sin\lambda & \cos\varphi\sin\lambda \\
+0 & +\cos\varphi & +\sin\varphi
+\end{pmatrix}
+\begin{pmatrix} \delta E_g \\ \delta N_g \\ \delta U_g \end{pmatrix}.
+\label{eq:enu2ecef_matrix}
+\end{equation}
+
+The target's ECEF coordinates are then:
+\begin{equation}
+\begin{pmatrix} X \\ Y \\ Z \end{pmatrix}_{\!\text{target}}
+=
+\begin{pmatrix} X \\ Y \\ Z \end{pmatrix}_{\!\text{base}}
++
+\begin{pmatrix} \Delta X \\ \Delta Y \\ \Delta Z \end{pmatrix}.
+\label{eq:target_ecef}
+\end{equation}
+The base monument ECEF coordinates $(X, Y, Z)_{\text{base}}$ are computed from the geodetic monument coordinates using Eqs.~\eqref{eq:geod2xyz_X}--\eqref{eq:geod2xyz_Z}.
+
+\subsubsection{From ECEF to Geodetic}
+
+The target ECEF coordinates $(X, Y, Z)_{\text{target}}$ are converted back to geodetic coordinates $(\varphi, \lambda, h)_{\text{target}}$ using Bowring's iterative method (Eqs.~\ref{eq:xyz2geod_lam}--\ref{eq:bowring_h}). For the short baselines in this survey ($< 1$\,km except CLF--MD at $\sim\!20$\,km), a single Bowring iteration achieves sub-millimeter convergence.
+
+The final geodetic coordinates inherit the reference frame of the input monument coordinates: if the base monument is in ITRF00, then the computed target position is in ITRF00. This is the mechanism by which the 0.73\,m NAD\,83/ITRF height discrepancy propagates from the monuments to the telescope mirrors, as discussed throughout this report. The relative geometry (mirror-to-mirror distances) is independent of the reference frame because the ENU-to-ECEF-to-geodetic round-trip is a rigid transformation.
+
+
+%======================================================================
+%======================================================================
+
+\begin{thebibliography}{16}
+
+\bibitem{misra2006}
+Misra, P.\ \& Enge, P.,
+\textit{Global Positioning System: Signals, Measurements, and Performance},
+2nd ed., Ganga-Jamuna Press, 2006.
+
+\bibitem{hofmann2008}
+Hofmann-Wellenhof, B., Lichtenegger, H., \& Wasle, E.,
+\textit{GNSS: Global Navigation Satellite Systems},
+Springer, 2008.
+
+\bibitem{klobuchar1987}
+Klobuchar, J.\,A.,
+``Ionospheric Time-Delay Algorithm for Single-Frequency GPS Users,''
+\textit{IEEE Trans.\ Aerospace and Electronic Systems}, AES-23(3), 325--331, 1987.
+
+\bibitem{coster2008}
+Coster, A.\ \& Komjathy, A.,
+``Space Weather and the Global Positioning System,''
+\textit{Space Weather}, 6, S06D04, 2008.
+
+\bibitem{ovstedal2002}
+{\O}vstedal, O.,
+``Absolute Positioning with Single-Frequency GPS Receivers,''
+\textit{GPS Solutions}, 6(3), 151--160, 2002.
+
+\bibitem{mannucci1998}
+Mannucci, A.\,J., et al.,
+``A global mapping technique for GPS-derived ionospheric TEC measurements,''
+\textit{Radio Science}, 33(3), 565--582, 1998.
+
+\bibitem{soler2004}
+Soler, T.\ \& Snay, R.\,A.,
+``Transforming Positions and Velocities between ITRF2000 and NAD\,83,''
+\textit{J.\ Surveying Engineering}, 130(2), 49--55, 2004.
+
+\bibitem{soler2003}
+Soler, T., et al.,
+``OPUS: Online Positioning User Service,''
+\textit{Professional Surveyor}, 23(5), 2003.
+
+\bibitem{roman2012}
+Roman, D.\,R.,
+``A National Geoid Model for NAD\,83,''
+NOAA/NGS, 2012.
+
+\bibitem{nga2014}
+National Geospatial-Intelligence Agency,
+``DoD World Geodetic System 1984,''
+NGA.STND.0036, 4th ed., 2014.
+
+\bibitem{bowring1976}
+Bowring, B.\,R.,
+``Transformation from spatial to geographical coordinates,''
+\textit{Survey Review}, 23(181), 323--327, 1976.
+
+\bibitem{torge2012}
+Torge, W.\ \& M{\"u}ller, J.,
+\textit{Geodesy}, 4th ed., de Gruyter, 2012.
+
+\bibitem{gesch2002}
+Gesch, D., et al.,
+``The National Elevation Dataset,''
+\textit{Photogrammetric Engineering and Remote Sensing}, 68(1), 5--11, 2002.
+
+\bibitem{tokuno}
+Tokuno, H., et al.,
+unpublished (cited in Nakazawa 2020).
+
+\bibitem{matsuzawa2025}
+Matsuzawa, A.,
+``MD Opt-copter Results,''
+TA-ALL Collaboration Meeting, June 2025.
+
+\bibitem{nakazawa2020}
+Nakazawa, A.,
+``BRM Opt-copter Results,''
+TA Internal Report, 2020.
+
+\end{thebibliography}

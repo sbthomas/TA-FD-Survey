@@ -107,7 +107,7 @@ Analysis, coordinate conversion, and telescope position reprocessing by S.B.\ Th
 
 All eight original survey markers used for fluorescence detector (FD) telescope geometry at the three Telescope Array FD stations---Black Rock Mesa (BRM), Long Ridge (LR), and Middle Drum (MD)---are stored in the analysis database using NAD\,83(CORS96)(Epoch:2002.0000) ellipsoidal heights. The Opt-copter RTK-GPS reports positions in WGS\,84, which is operationally equivalent to the International Terrestrial Reference Frame (ITRF). The ellipsoidal height difference between these two frames at the TA site is approximately \textbf{0.73\,m}, with NAD\,83 heights being systematically higher than ITRF.
 
-This discrepancy produces a systematic elevation angle bias of approximately $+0.17\degree$ in the Opt-copter pointing direction analysis at a flight distance of 250\,m. This bias is uniform across all telescopes at each station and matches the observed $\Delta$Elevation offsets reported by Matsuzawa (2025) for Middle Drum and by Nakazawa (2020) for Black Rock Mesa. The effect propagates into shower geometry reconstruction: preliminary estimates suggest a systematic underestimation of $\Xmax$ on the order of $9\text{--}15~\text{g/cm}^2$ per $0.1\degree$ of pointing error, with corresponding energy biases of $\sim\!4\%$.
+This discrepancy produces a systematic elevation angle bias of approximately $+0.17\degree$ in the Opt-copter pointing direction analysis at a flight distance of 250\,m. This bias is uniform across all telescopes at each station and matches the observed $\Delta$Elevation offsets reported by Matsuzawa~\cite{matsuzawa2025} for Middle Drum and by Nakazawa~\cite{nakazawa2020} for Black Rock Mesa. The effect propagates into shower geometry reconstruction: preliminary estimates suggest a systematic underestimation of $\Xmax$ on the order of $9\text{--}15~\text{g/cm}^2$ per $0.1\degree$ of pointing error, with corresponding energy biases of $\sim\!4\%$.
 
 The corrected ITRF00 coordinates are derived from inverse-variance weighted averages of all available OPUS static solutions. \textbf{In this revised report, the complete total station survey has been reprocessed using these corrected monument coordinates to produce updated telescope mirror positions for all three FD stations.} The reprocessing confirms that the relative mirror geometry is preserved to within 1\,mm, while the absolute positions shift by the expected frame-dependent offsets.
 
@@ -119,7 +119,7 @@ No resurvey is required for the seven well-determined markers. One marker (CLF1)
 
 \subsection{The Survey Campaign}
 
-In March 2011, a GPS survey campaign was conducted at all three TA FD stations to establish precise reference markers for the Opt-copter calibration system. A Trimble TRM41249.00 antenna was used for all occupations, with antenna heights recorded per session (Table~\ref{tab:antenna_heights}). Data were submitted to the NGS Online Positioning User Service (OPUS) for static processing. Each OPUS solution provides coordinates in two reference frames simultaneously:
+In March 2011, a GPS survey campaign was conducted at all three TA FD stations to establish precise reference markers for the Opt-copter calibration system. A Trimble TRM41249.00 antenna was used for all occupations, with antenna heights recorded per session (Table~\ref{tab:antenna_heights}). Data were submitted to the NGS Online Positioning User Service (OPUS)~\cite{soler2003} for static processing. Each OPUS solution provides coordinates in two reference frames simultaneously:
 
 \begin{itemize}[nosep]
     \item NAD\,83(CORS96)(Epoch:2002.0000) --- the North American datum
@@ -307,7 +307,7 @@ All GPS receivers---whether survey-grade or consumer-grade---natively compute po
 NAD\,83 (North American Datum of 1983) is a separate reference frame that is fixed to the North American tectonic plate. It was originally defined to coincide with WGS\,84 at epoch 1984.0, but because the North American plate moves relative to the global ITRF at approximately 1--2\,cm/year, the two frames have diverged by roughly 1--2\,m over the past four decades. At any given location, the NAD\,83 and WGS\,84/ITRF ellipsoidal heights differ by a combination of:
 
 \begin{itemize}[nosep]
-    \item A 14-parameter similarity transformation (translations, rotations, scale, and their time derivatives) maintained by NGS
+    \item A 14-parameter similarity transformation (translations, rotations, scale, and their time derivatives) maintained by NGS~\cite{soler2004}
     \item The accumulated tectonic motion since the reference epoch
     \item The specific NAD\,83 realization used (CORS96, 2007, 2011, etc.)
 \end{itemize}
@@ -329,7 +329,7 @@ The NGS OPUS service reports every solution in both frames simultaneously: NAD\,
 
 \subsubsection{Broader Impact: Surface Detector Heights from DEM Comparison}
 
-The NAD\,83/WGS\,84 reference frame discrepancy documented in this report for the FD markers also affects any comparison between GPS-measured heights and map/DEM-derived heights within the experiment. A concrete example is the surface detector (SD) array, where a large systematic offset has been observed between GPS and USGS NED (National Elevation Dataset) heights.
+The NAD\,83/WGS\,84 reference frame discrepancy documented in this report for the FD markers also affects any comparison between GPS-measured heights and map/DEM-derived heights within the experiment. A concrete example is the surface detector (SD) array, where a large systematic offset has been observed between GPS and USGS NED (National Elevation Dataset)~\cite{gesch2002} heights.
 
 A comparison of 836 SD stations across the TA, TALE, and TAx4 arrays (from the GPS\,/\,NED analysis by Kido and Okuda) reveals a systematic height discrepancy of:
 
@@ -374,7 +374,7 @@ This offset is much larger than the 0.73\,m NAD\,83/WGS\,84 frame discrepancy. A
 \label{eq:iono_bias}
 \end{equation}
 
-\paragraph{Ionospheric origin.} The Motorola Oncore GPS receivers in the SD stations are single-frequency (L1-only) receivers configured primarily for timing. The SD DAQ software applies no ionospheric correction to the position output, and the receivers are believed to operate in a mode that does not apply the broadcast Klobuchar model internally. In this configuration, the \emph{full} ionospheric group delay at L1 (1575.42\,MHz) maps into the position solution.
+\paragraph{Ionospheric origin.} The theoretical basis for the ionospheric height bias is detailed in Section~\ref{sec:iono_theory}. In brief, the Motorola Oncore GPS receivers in the SD stations are single-frequency (L1-only) receivers configured primarily for timing. The SD DAQ software applies no ionospheric correction to the position output, and the receivers are believed to operate in a mode that does not apply the broadcast Klobuchar model~\cite{klobuchar1987} internally. In this configuration, the \emph{full} ionospheric group delay at L1 (1575.42\,MHz) maps into the position solution.
 
 The L1 ionospheric range delay is $\Delta\rho = 0.162 \times \text{VTEC}$\,m, where VTEC is the vertical total electron content in TECU ($10^{16}$\,el/m$^2$). At the TA latitude ($\sim\!39\degree$\,N), typical values are 5--10\,TECU at night and 15--30\,TECU during the day, with a 24-hour average of $\sim\!10$--15\,TECU for moderate solar conditions. The ionospheric delay maps preferentially into the height component due to satellite geometry, with an amplification factor of approximately VDOP~$\times$~obliquity~$\approx 2$--3. The resulting height bias of $\sim\!5$\,m is consistent with the observed $5.26 \pm 0.93$\,m.
 
@@ -455,20 +455,27 @@ H_{\text{ortho}} &\approx h_{\text{NAD83}} - N \approx h_{\text{NAD83}} + 19.9~\
 
 \noindent For example, the BR1 monument has $h_{\text{WGS84}} = 1395.053$\,m, $h_{\text{NAD83}} = 1395.791$\,m, and $H_{\text{ortho}} \approx 1415.8$\,m (the OPUS report gives NAVD\,88 orthometric height $= 1415.778$\,m via GEOID09).
 
+\input{new_sections_geodetic}
+
 \subsection{Processing Pipeline}
+\label{sec:pipeline}
 
 The survey reduction pipeline proceeds as follows:
 
 \begin{enumerate}[nosep]
     \item Monument geodetic coordinates are loaded from the monument database for a specified reference frame.
-    \item Deflection-of-vertical parameters ($\xi$, $\eta$) are applied to each base station.
-    \item For each measurement set, the inter-monument baseline azimuth is computed and used to orient the total station observations to true north.
-    \item Each raw observation (azimuth, elevation, slant distance) is converted to local East/North/Up offsets relative to the base monument.
-    \item The ENU offsets are rotated from the local gravity frame to the geocentric frame via the deflection-of-vertical rotation, added to the base monument ECEF coordinates, and converted to geodetic coordinates.
-    \item Final telescope positions are expressed in geodetic coordinates (latitude, longitude, ellipsoidal height) and in ENU coordinates relative to a common origin at the Central Laser Facility.
+    \item Deflection-of-vertical parameters ($\xi$, $\eta$) are applied to each base station (Section~\ref{sec:deflection}).
+    \item For each measurement set, the inter-monument baseline azimuth is computed and used to orient the total station observations to true north (Eq.~\ref{eq:azimuth_cal}).
+    \item Each raw observation (azimuth, elevation, slant distance) is converted to local East/North/Up offsets relative to the base monument (Eqs.~\ref{eq:obs2enu_E}--\ref{eq:obs2enu_U}).
+    \item The ENU offsets are rotated from the local gravity frame to the geocentric frame via the deflection-of-vertical rotation (Eq.~\ref{eq:deflection_rotation}), added to the base monument ECEF coordinates, and converted to geodetic coordinates (Section~\ref{sec:survey_math}).
+    \item Final telescope positions are expressed in geodetic coordinates (latitude, longitude, ellipsoidal height) and in ENU coordinates relative to a per-frame origin at the Central Laser Facility.
 \end{enumerate}
 
-The critical point is that the absolute telescope positions inherit the reference frame of the input monument coordinates. When the monuments are in NAD\,83, the telescopes are in NAD\,83; when the monuments are in ITRF00, the telescopes are in ITRF00. The relative geometry between mirrors at a given station is independent of the reference frame choice.
+The critical point is that the absolute telescope positions inherit the reference frame of the input monument coordinates. When the monuments are in NAD\,83, the telescopes are in NAD\,83; when the monuments are in ITRF00, the telescopes are in ITRF00. The relative geometry between mirrors at a given station is independent of the reference frame choice. To ensure full consistency, the ENU origin is also defined per-frame, computed as a fixed offset from the CLF2 monument coordinates in each frame (see Section~\ref{sec:survey_math}).
+
+\input{new_sections_math}
+
+\input{new_sections_iono}
 
 %======================================================================
 \section{OPUS Solutions and Height Discrepancies}
@@ -861,7 +868,7 @@ LR\_M11 & $39\degree\,12'\,28.385''$ & $113\degree\,07'\,17.067''$ & 1548.629 & 
 
 \subsection{Self-Consistency of XYZ-to-Geodetic Conversion}
 
-The ITRF00 monument coordinates were originally reported in ECEF Cartesian form (Table~\ref{tab:corrected}). Conversion to geodetic coordinates for the monument database was performed using the WGS\,84 Bowring iterative method. The computed ellipsoidal heights were compared against the inverse-variance weighted average heights to verify self-consistency:
+The ITRF00 monument coordinates were originally reported in ECEF Cartesian form (Table~\ref{tab:corrected}). Conversion to geodetic coordinates for the monument database was performed using the WGS\,84 Bowring iterative method~\cite{bowring1976}. The computed ellipsoidal heights were compared against the inverse-variance weighted average heights to verify self-consistency:
 
 \begin{table}[H]
 \centering
@@ -999,7 +1006,7 @@ MD\_M14 & 1589.152 &     {---} &     {---} &     {---} & \textbf{1589.152} \\
 
 \subsection{Impact on $\Xmax$ Reconstruction}
 
-Tokuno et al.\ (unpublished; cited in Nakazawa 2020, slide 26) established that a $0.1\degree$ FD pointing uncertainty produces systematic uncertainties of approximately 4\% in energy and $9~\text{g/cm}^2$ in $\Xmax$. The observed systematic elevation bias of $\sim\!0.17\degree$ therefore implies:
+Tokuno et al.~\cite{tokuno} (cited in Nakazawa~\cite{nakazawa2020}, slide 26) established that a $0.1\degree$ FD pointing uncertainty produces systematic uncertainties of approximately 4\% in energy and $9~\text{g/cm}^2$ in $\Xmax$. The observed systematic elevation bias of $\sim\!0.17\degree$ therefore implies:
 
 \begin{itemize}[nosep]
 \item Energy systematic: $\sim\!7\%$
@@ -1008,7 +1015,7 @@ Tokuno et al.\ (unpublished; cited in Nakazawa 2020, slide 26) established that 
 
 \noindent For context, the mean $\Xmax$ difference between proton and iron primaries at $10^{19.5}$\,eV is approximately $100~\text{g/cm}^2$ in current hadronic interaction models. A $15~\text{g/cm}^2$ systematic bias is therefore significant for composition studies.
 
-As noted by Nakazawa (2020, slide 12): ``If the copter measurement is true, the $\Xmax$ of the current analysis is underestimated.'' The present work identifies the root cause of the copter measurement discrepancy as a reference frame error in the survey marker coordinates, not a deficiency of the Opt-copter system or the FD optics.
+As noted by Nakazawa~\cite{nakazawa2020} (slide 12): ``If the copter measurement is true, the $\Xmax$ of the current analysis is underestimated.'' The present work identifies the root cause of the copter measurement discrepancy as a reference frame error in the survey marker coordinates, not a deficiency of the Opt-copter system or the FD optics.
 
 \subsection{Effect on Telescope-Specific Calibration}
 
@@ -1059,7 +1066,7 @@ The NAD\,83-to-ITRF height offsets vary from station to station (Table~\ref{tab:
 \section{Conclusion}
 %======================================================================
 
-A systematic 0.73\,m vertical bias in the fluorescence detector survey marker coordinates has been identified, traced to the use of NAD\,83 ellipsoidal heights where the Opt-copter analysis requires ITRF/WGS\,84 values. The corrected ITRF00 coordinates exist in the original 2011 OPUS reports and require no new observations for the seven primary markers. The predicted elevation angle bias of $0.167\degree$ at 250\,m flight distance matches the $+0.17\degree$ mean offset independently measured by Matsuzawa (2025) across all 14 Middle Drum telescopes, providing strong confirmation that this reference frame discrepancy is the dominant source of the systematic elevation error observed in the Opt-copter direction analysis over the past seven years of measurements.
+A systematic 0.73\,m vertical bias in the fluorescence detector survey marker coordinates has been identified, traced to the use of NAD\,83 ellipsoidal heights where the Opt-copter analysis requires ITRF/WGS\,84 values. The corrected ITRF00 coordinates exist in the original 2011 OPUS reports and require no new observations for the seven primary markers. The predicted elevation angle bias of $0.167\degree$ at 250\,m flight distance matches the $+0.17\degree$ mean offset independently measured by Matsuzawa~\cite{matsuzawa2025} across all 14 Middle Drum telescopes, providing strong confirmation that this reference frame discrepancy is the dominant source of the systematic elevation error observed in the Opt-copter direction analysis over the past seven years of measurements.
 
 In this revised report, the complete total station survey has been reprocessed using ITRF00 inverse-variance weighted-average monument coordinates, producing corrected telescope mirror positions for all three FD stations (38 mirrors total: 14 at Middle Drum, 12 at Black Rock Mesa, 12 at Long Ridge). The reprocessing confirms:
 
@@ -1106,5 +1113,7 @@ In this revised report, the complete total station survey has been reprocessed u
 
 \noindent\textbf{Software.} The survey reduction code (\texttt{survey\_processor.c}) processes raw total station observations through five reference frames (OPUS, CSRS, AusPos, APPS, ITRF00 weighted average) in a single run. It requires only a C compiler and the standard math library. The XYZ-to-geodetic conversion was independently verified using a Python~3 implementation of the WGS\,84 Bowring method (\texttt{xyz2csv.py}), which has no external dependencies.
 }
+
+\input{new_sections_bib}
 
 \end{document}
