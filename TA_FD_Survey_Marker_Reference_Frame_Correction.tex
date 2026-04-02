@@ -298,10 +298,86 @@ To extend this survey to additional telescopes (e.g., TAx4) or new reference poi
 \end{enumerate}
 
 \subsection{The Reference Frame Problem}
+\label{sec:frame_problem}
 
-NAD\,83 and ITRF are distinct reference frames. NAD\,83 is fixed to the North American tectonic plate, while ITRF is an Earth-centered, Earth-fixed global frame that accounts for plate motion. At any given location, the two frames differ by a combination of rotation, translation, and scale parameters that vary with position and epoch. At the TA site ($\sim\!39.3\degree$\,N, $\sim\!113\degree$\,W), the dominant manifestation is a systematic difference in ellipsoidal height of approximately 0.73\,m, with smaller horizontal offsets of a few centimeters.
+\subsubsection{Ellipsoidal Heights: NAD\,83 vs.\ WGS\,84/ITRF}
 
-The Opt-copter's onboard RTK-GPS receiver reports positions in WGS\,84. For all practical purposes, WGS\,84 and ITRF are identical at the centimeter level. When the analysis code computes the geometric relationship between the Opt-copter (in WGS\,84/ITRF) and the survey markers (stored in NAD\,83), the height discrepancy introduces a systematic error in the computed elevation angle.
+All GPS receivers---whether survey-grade or consumer-grade---natively compute positions in the WGS\,84 reference frame, which is operationally equivalent to the International Terrestrial Reference Frame (ITRF) at the centimeter level. The vertical coordinate reported by GPS is the \emph{ellipsoidal height} $h$: the distance above the WGS\,84 reference ellipsoid, measured along the ellipsoid normal.
+
+NAD\,83 (North American Datum of 1983) is a separate reference frame that is fixed to the North American tectonic plate. It was originally defined to coincide with WGS\,84 at epoch 1984.0, but because the North American plate moves relative to the global ITRF at approximately 1--2\,cm/year, the two frames have diverged by roughly 1--2\,m over the past four decades. At any given location, the NAD\,83 and WGS\,84/ITRF ellipsoidal heights differ by a combination of:
+
+\begin{itemize}[nosep]
+    \item A 14-parameter similarity transformation (translations, rotations, scale, and their time derivatives) maintained by NGS
+    \item The accumulated tectonic motion since the reference epoch
+    \item The specific NAD\,83 realization used (CORS96, 2007, 2011, etc.)
+\end{itemize}
+
+\noindent At the Telescope Array site ($\sim\!39.3\degree$\,N, $\sim\!113\degree$\,W), the dominant effect is a systematic difference in ellipsoidal height:
+
+\begin{equation}
+h_{\text{NAD\,83}} - h_{\text{WGS\,84/ITRF}} \approx +0.73~\text{m}
+\label{eq:frame_offset}
+\end{equation}
+
+\noindent That is, NAD\,83 ellipsoidal heights at the TA site are approximately 0.73\,m \emph{higher} than the corresponding WGS\,84 values. The horizontal offsets are smaller (a few centimeters) and vary smoothly with latitude.
+
+This offset is \emph{not} related to the difference between ellipsoidal height and elevation above sea level (orthometric height), which involves the geoid undulation ($N \approx -19.9$\,m at the TA site via GEOID12B). The NAD\,83-to-ITRF offset is purely a difference in how the two frames define the reference ellipsoid position and orientation in space.
+
+\subsubsection{How the Error Entered the FD Database}
+
+The NGS OPUS service reports every solution in both frames simultaneously: NAD\,83(CORS96)(Epoch:2002.0000) and ITRF00 (at the observation epoch). The OPUS datasheets clearly label both columns. When the survey results were entered into the TA analysis database, the NAD\,83 ellipsoidal heights were selected---a natural choice, since NAD\,83 is the standard datum for surveying in the United States. However, the Opt-copter's RTK-GPS receiver reports WGS\,84 positions. When the analysis code computes the geometric relationship between the Opt-copter (in WGS\,84) and the survey markers (stored in NAD\,83), the 0.73\,m height discrepancy introduces a systematic error in the computed elevation angle.
+
+\subsubsection{Broader Impact: Surface Detector Heights from DEM Comparison}
+
+This reference frame discrepancy is not unique to the FD telescope geometry. A related manifestation has been observed in the surface detector (SD) array, where a systematic offset of approximately 1\,m has been noted between the DEM-derived heights and the GPS-measured heights from the Motorola GPS engines in each SD station.
+
+The SD GPS receivers report WGS\,84 ellipsoidal heights. To compare these with terrain elevation, one must convert to orthometric height (elevation above mean sea level) using a geoid model:
+
+\begin{equation}
+H_{\text{ortho}} = h_{\text{ellipsoidal}} - N_{\text{geoid}}
+\label{eq:geoid}
+\end{equation}
+
+\noindent where $N$ is the geoid undulation ($N \approx -19.9$\,m at the TA site from GEOID12B, meaning the geoid surface is 19.9\,m below the ellipsoid). USGS Digital Elevation Models report orthometric heights referenced to NAVD\,88.
+
+The critical subtlety is that the NGS geoid models (GEOID12B, GEOID18, etc.) are defined as the separation between the \emph{NAD\,83} ellipsoid and the NAVD\,88 geoid---not between the WGS\,84 ellipsoid and the geoid. If WGS\,84 ellipsoidal heights are used as input to a NAD\,83-referenced geoid model without first applying the frame transformation, the resulting orthometric height inherits the $\sim\!0.73$\,m frame offset:
+
+\begin{equation}
+H_{\text{computed}} = h_{\text{WGS84}} - N_{\text{NAD83}} = (h_{\text{NAD83}} - 0.73) - N_{\text{NAD83}} = H_{\text{true}} - 0.73~\text{m}
+\label{eq:sd_offset}
+\end{equation}
+
+\noindent The GPS-derived orthometric height is therefore systematically \emph{lower} than the true orthometric height (and thus lower than the DEM value) by approximately 0.73\,m. When combined with other contributions---DEM interpolation error, single-frequency GPS vertical accuracy ($\sim\!2$--3\,m RMS for consumer Motorola engines), and local geoid model uncertainty---this manifests as the observed $\sim\!1$\,m systematic offset between SD GPS heights and DEM heights.
+
+The resolution is the same as for the FD markers: either convert the GPS heights to NAD\,83 before applying the geoid model, or use an ITRF-referenced geoid. For the SD array, where individual station height accuracy of 1--2\,m is typically sufficient, the 0.73\,m bias may be within the existing error budget. For the FD geometry, where sub-meter accuracy drives the Opt-copter calibration, the correction is essential.
+
+\subsubsection{Distinguishing Height Types}
+
+For clarity, three distinct ``heights'' appear in the TA context. Confusing them is the root cause of both the FD and SD discrepancies:
+
+\begin{table}[H]
+\centering
+\caption{Height types relevant to the Telescope Array. Each measures the vertical distance above a different reference surface.}
+\label{tab:height_types}
+\smallskip
+\begin{tabular}{@{}llll@{}}
+\toprule
+{Symbol} & {Name} & {Reference Surface} & {Used By} \\
+\midrule
+$h_{\text{WGS84}}$ & WGS\,84 ellipsoidal height & WGS\,84 ellipsoid & GPS receivers \\
+$h_{\text{NAD83}}$ & NAD\,83 ellipsoidal height & NAD\,83 ellipsoid & OPUS, survey database \\
+$H_{\text{ortho}}$ & Orthometric height (elevation) & NAVD\,88 geoid & USGS DEM, topo maps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent At the TA site, the approximate relationships are:
+\begin{align}
+h_{\text{NAD83}} &\approx h_{\text{WGS84}} + 0.73~\text{m} \label{eq:nad83_wgs84}\\
+H_{\text{ortho}} &\approx h_{\text{NAD83}} - N \approx h_{\text{NAD83}} + 19.9~\text{m} \label{eq:ortho}
+\end{align}
+
+\noindent For example, the BR1 monument has $h_{\text{WGS84}} = 1395.053$\,m, $h_{\text{NAD83}} = 1395.791$\,m, and $H_{\text{ortho}} \approx 1415.8$\,m (the OPUS report gives NAVD\,88 orthometric height $= 1415.778$\,m via GEOID09).
 
 \subsection{Processing Pipeline}
 
