@@ -8,9 +8,13 @@
 #define DEG2RAD (M_PI/180.0e0)
 #define _GNU_SOURCE
 #define NMAX 200
-#define ORIGIN_LATITUDE  (39.296917937e0) 
-#define ORIGIN_LONGITUDE (-112.908732522e0) 
-#define ORIGIN_HEIGHT    (1370.046e0)
+/* Per-frame ENU origin: virtual ground point beneath the Central Laser Facility.
+   Computed as CLF2[frame] + fixed offset vector (ORIGIN - CLF2_AusPos).
+   This ensures each frame's ENU coordinates are self-consistent. */
+static double ORIGIN_LATITUDE[5]  = {39.296917704e0, 39.296917895e0, 39.296917937e0, 39.296917659e0, 39.296917698e0};
+static double ORIGIN_LONGITUDE[5] = {-112.908732369e0, -112.908732489e0, -112.908732522e0, -112.908732403e0, -112.908732386e0};
+static double ORIGIN_HEIGHT[5]    = {1370.015e0, 1370.060e0, 1370.046e0, 1370.046e0, 1370.017e0};
+/* Indices: 0=OPUS, 1=CSRS, 2=AusPos, 3=APPS, 4=ITRF00 */
 
 typedef struct POSITION
 {
@@ -201,10 +205,10 @@ int print_measurements(int N, MEASUREMENT meas[], int ref)
   
   printf("|-\n");
   printf("| \'\'\'ORIGIN_CLF\'\'\' || ");
-  printf2_ddmmss(ORIGIN_LATITUDE);
+  printf2_ddmmss(ORIGIN_LATITUDE[ref]);
   printf(" || ");
-  printf2_ddmmss(ORIGIN_LONGITUDE);
-  printf(" || %.3lf", ORIGIN_HEIGHT);
+  printf2_ddmmss(ORIGIN_LONGITUDE[ref]);
+  printf(" || %.3lf", ORIGIN_HEIGHT[ref]);
   printf(" || %.3lf", 0.0e0);
   printf(" || %.3lf", 0.0e0);
   printf(" || %.3lf", 0.0e0);
@@ -230,8 +234,8 @@ int print_measurements(int N, MEASUREMENT meas[], int ref)
 	  printf2_ddmmss(TA_site[is][im].longitude);
 	  printf(" || %.3lf", TA_site[is][im].height);
 
-	  geo2enu(0.0e0, 0.0e0, 
-		  ORIGIN_LATITUDE*DEG2RAD,-fabs(ORIGIN_LONGITUDE*DEG2RAD),ORIGIN_HEIGHT,
+	  geo2enu(0.0e0, 0.0e0,
+		  ORIGIN_LATITUDE[ref]*DEG2RAD,-fabs(ORIGIN_LONGITUDE[ref]*DEG2RAD),ORIGIN_HEIGHT[ref],
 		  (TA_site[is][im].latitude)*DEG2RAD,
 		  -fabs((TA_site[is][im].longitude)*DEG2RAD),
 		  TA_site[is][im].height,
@@ -506,8 +510,8 @@ int process_measurement(MEASUREMENT *meas, int ref)
   meas->target.longitude = -fabs(lambda)/DEG2RAD;
   meas->target.height    = h;
 
-  geo2enu(0.0e0, 0.0e0, 
-	  ORIGIN_LATITUDE*DEG2RAD,-fabs(ORIGIN_LONGITUDE*DEG2RAD),ORIGIN_HEIGHT,
+  geo2enu(0.0e0, 0.0e0,
+	  ORIGIN_LATITUDE[ref]*DEG2RAD,-fabs(ORIGIN_LONGITUDE[ref]*DEG2RAD),ORIGIN_HEIGHT[ref],
 	  (meas->target.latitude)*DEG2RAD,-fabs((meas->target.longitude)*DEG2RAD),meas->target.height,
 	  &(meas->target.east), &(meas->target.north),  &(meas->target.up));
 
